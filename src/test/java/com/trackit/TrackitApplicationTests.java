@@ -1,4 +1,4 @@
-package com.trackit.trackit;
+package com.trackit;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

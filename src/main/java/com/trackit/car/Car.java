@@ -11,14 +11,14 @@ import javax.persistence.OneToOne;
 import com.trackit.driver.Driver;
 import com.trackit.enterprise.Enterprise;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Car {
 
 	@Id
@@ -28,7 +28,7 @@ public class Car {
 
 	private String model;
 
-	private String trips;
+	private String nextTrip;
 
 	private String fuelConsumption;
 

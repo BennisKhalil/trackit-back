@@ -1,4 +1,4 @@
-package com.trackit.dto;
+package com.trackit.car;
 
 import lombok.Data;
 

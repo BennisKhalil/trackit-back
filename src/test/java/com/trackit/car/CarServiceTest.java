@@ -1,4 +1,4 @@
-package com.trackit.service;
+package com.trackit.car;
 
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.Assert.assertEquals;
@@ -65,7 +65,7 @@ public class CarServiceTest {
         CarDTO carDTO = new CarDTO();
         carDTO.setId("1");
         carDTO.setBrand("ford");
-        Car carEntity = carService.map(carDTO);
+        Car carEntity = carService.maptoCar(carDTO);
         carService.addOrUpdateCar(carDTO);
         verify(carRepo, times(1)).save(any(Car.class));
         assertEquals(carDTO.getId(), carEntity.getId());

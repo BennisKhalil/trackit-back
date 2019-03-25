@@ -1,4 +1,4 @@
-package com.trackit.service;
+package com.trackit.entreprise;
 
 import com.trackit.enterprise.Enterprise;
 import com.trackit.enterprise.EnterpriseRepo;

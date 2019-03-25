@@ -26,7 +26,7 @@ public class CarServiceImpl implements CarService{
 
 	@Override
 	public CarDTO addOrUpdateCar(CarDTO carDTO) {
-		Car car = map(carDTO);
+		Car car = maptoCar(carDTO);
 		carRepo.save(car);
     return carDTO;
 	}
@@ -37,7 +37,7 @@ public class CarServiceImpl implements CarService{
 		carRepo.deleteById(id);
 	}
 
-	public Car map(CarDTO carDTO) {
+	public Car maptoCar(CarDTO carDTO) {
 		return Car.builder().Id(carDTO.getId())
 				.brand(carDTO.getBrand())
 				.fuelConsumption(carDTO.getFuelConsumption())
@@ -46,6 +46,7 @@ public class CarServiceImpl implements CarService{
 				.enterprise(enterpriseRepo.getOne(carDTO.getEnterprise()))
 				.build();
 	}
+
 
 
 	

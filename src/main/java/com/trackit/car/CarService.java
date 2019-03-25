@@ -1,10 +1,12 @@
 package com.trackit.car;
 
+import com.trackit.exception.EnterpriseNotFoundException;
+
 import java.util.List;
 
 public interface CarService {
 
-    List<Car> findCarsByEnterpriseId(Integer id);
+    List<CarDTO> findCarsByEnterpriseId(Integer id) throws EnterpriseNotFoundException;
 
     CarDTO addOrUpdateCar(CarDTO car);
 

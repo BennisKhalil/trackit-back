@@ -4,8 +4,7 @@ import java.util.List;
 
 public interface EnterpriseService {
 
-	List<Enterprise> findAllEnterprise(); 
-	void addEntreprise(Enterprise enterprise);
-	void updateEnterprise(Enterprise enterprise);
+	List<EnterpriseDTO> findAllEnterprise();
+	EnterpriseDTO addOrUpdateEntreprise(EnterpriseDTO enterpriseDTO);
 	void deleteEnterprise(Integer id);
 }

@@ -2,30 +2,26 @@ package com.trackit.driver;
 
 import java.time.LocalDate;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 
 import com.trackit.car.Car;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.trackit.enterprise.Enterprise;
+import lombok.*;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Driver {
 
 	@Id
 	@GeneratedValue
 	private Integer Id;
 
-	private String name;
+	private String firstName;
 
 	private String lastName;
 
@@ -33,7 +29,11 @@ public class Driver {
 
 	private LocalDate employedDate;
 
-	@OneToOne(mappedBy= "com/trackit/driver",fetch = FetchType.EAGER, cascade = CascadeType.PERSIST, optional = false)
+	@OneToOne(mappedBy= "driver",fetch = FetchType.EAGER, cascade = CascadeType.PERSIST, optional = false)
 	private Car car;
+
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "enterprise_id")
+	private Enterprise enterprise;
 
 }

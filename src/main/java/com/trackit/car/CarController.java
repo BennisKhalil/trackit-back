@@ -2,6 +2,7 @@ package com.trackit.car;
 
 import java.util.List;
 
+import com.trackit.exception.EnterpriseNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,13 +20,8 @@ public class CarController {
 	@Autowired
 	private CarService carService;
 	
-	@GetMapping("/{enterpriseId}")
-	private ResponseEntity<List<Car>> getCarsByEnterprise(@PathVariable Integer id) throws CarsNotFoundException {
-		List<Car> cars =carService.findCarsByEnterpriseId(id);
-		if(cars == null) {
-			throw new CarsNotFoundException("no car found for this enterprise");
-		}
-		return new ResponseEntity<>(cars,HttpStatus.OK);
-		
-	}
+//	@GetMapping("/{enterpriseId}")
+//	private ResponseEntity<List<CarDTO>> getCarsByEnterprise(@PathVariable Integer id){
+//
+//	}
 }

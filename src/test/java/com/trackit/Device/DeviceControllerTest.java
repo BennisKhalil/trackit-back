@@ -2,44 +2,41 @@ package com.trackit.Device;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import static net.bytebuddy.matcher.ElementMatchers.is;
-import static org.mockito.Mockito.*;
+
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
+@WebMvcTest(DeviceController.class)
 public class DeviceControllerTest {
 
+    @Autowired
     private MockMvc mockMvc;
-    @Mock
-    private DeviceRepo deviceRepo;
-    @InjectMocks
-    private DeviceServiceImpl deviceServiceImpl;
+    @MockBean
+    private DeviceService deviceServiceImpl;
 
-    @Test(expected = Exception.class)
+    @Test
     public void ShouldReturnDeviceWhenCalling_getDeviceByDeviceId() throws Exception {
-        DeviceDto deviceDto= DeviceDto.builder()
-                .deviceId("1").lon("30").lat("6").build();
 
-        when(deviceServiceImpl.findDeviceById("1")).thenReturn(deviceDto);
-        mockMvc.perform(get("/device/{deviceId}","1"))
+        when(deviceServiceImpl.findDeviceById("100")).thenReturn(DeviceDto.builder().deviceId("100")
+                .lat(Float.valueOf(3)).lon(Float.valueOf(5)).build());
+        mockMvc.perform(get("/device/{deviceId}","100"))
                 .andExpect(status().isOk())
-               // .andExpect(content().contentType(TestUtil.APPLICATION_JSON-UTF8))
-                .andExpect((ResultMatcher) jsonPath("$.DeviceId",is("1")))
-                .andExpect((ResultMatcher) jsonPath("$.lat",is("6")))
-                .andExpect((ResultMatcher) jsonPath("$.lon",is("30")));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.deviceId").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.lat").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.lon").exists());
 
-        verify(deviceServiceImpl,times(1)).findDeviceById("1");
-        verifyNoMoreInteractions(deviceServiceImpl);
+
     }
 
 

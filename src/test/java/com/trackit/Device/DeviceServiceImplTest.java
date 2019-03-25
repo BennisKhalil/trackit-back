@@ -2,6 +2,7 @@ package com.trackit.Device;
 
 
 import com.trackit.exception.DeviceNotFoundException;
+import lombok.Builder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +19,6 @@ import static org.mockito.internal.verification.VerificationModeFactory.times;
 @RunWith(MockitoJUnitRunner.class)
 public class DeviceServiceImplTest {
 
-    public static final String id = "1";
 
     @Mock
     private DeviceRepo deviceRepo;
@@ -30,30 +30,29 @@ public class DeviceServiceImplTest {
     private DeviceDto deviceDto;
 
     @Before
-    public void init() {
-
+    public  void init(){
         device = Device.builder()
-                .deviceId(id).lat("33.97").lon("-6.64").build();
-
+                .deviceId("1").lat(Float.valueOf(33)).lon(Float.valueOf(6)).build();
     }
+
 
     @Test
     public void shouldReturnDeviceWhenWeCall_findDeviceById() throws DeviceNotFoundException {
-        when(deviceRepo.findByDeviceId(id)).thenReturn(device);
-        deviceDto = deviceServiceImpl.findDeviceById(id);
 
+        when(deviceRepo.findByDeviceId("1")).thenReturn(device);
+        deviceDto = deviceServiceImpl.findDeviceById("1");
         Assert.assertNotNull(deviceDto);
-        Assert.assertEquals("33.97",deviceDto.getLat());
-        Assert.assertEquals("-6.64",deviceDto.getLon());
-        verify(deviceRepo,times(1)).findByDeviceId(id);
+        Assert.assertEquals(Float.valueOf(33),deviceDto.getLat());
+        Assert.assertEquals(Float.valueOf(6),deviceDto.getLon());
+        verify(deviceRepo,times(1)).findByDeviceId("1");
         verifyNoMoreInteractions(deviceRepo);
 
     }
     @Test(expected = DeviceNotFoundException.class)
     public void shouldReturnDeviceNotFoundExceptionIfNoDeviCeIsFound() throws DeviceNotFoundException {
-        when(deviceRepo.findByDeviceId(id)).thenReturn(null);
+        when(deviceRepo.findByDeviceId("2")).thenReturn(null);
         try {
-            deviceServiceImpl.findDeviceById(id);
+            deviceServiceImpl.findDeviceById("2");
         } catch (DeviceNotFoundException e) {
             assertEquals("device not found",e.getMessage());
             throw e; }

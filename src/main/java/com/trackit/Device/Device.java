@@ -160,10 +160,10 @@ public class Device {
     private Integer fuelRailAbsolutePressure;
 
 
-    private String lat;
+    private Float lat;
 
     @JsonProperty("long")
 
-    private String lon;
+    private Float lon;
 
 }

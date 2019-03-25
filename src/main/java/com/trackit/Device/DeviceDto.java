@@ -10,8 +10,8 @@ import lombok.*;
 public class DeviceDto {
 
     private String deviceId;
-    private String lat;
-    private String lon;
+    private Float lat;
+    private Float lon;
 
 
 }

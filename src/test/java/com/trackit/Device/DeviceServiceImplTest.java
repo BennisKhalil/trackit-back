@@ -51,11 +51,11 @@ public class DeviceServiceImplTest {
     }
     @Test(expected = DeviceNotFoundException.class)
     public void shouldReturnDeviceNotFoundExceptionIfNoDeviCeIsFound() throws DeviceNotFoundException {
-        when(deviceRepo.findByDeviceId("2")).thenReturn(null);
+        when(deviceRepo.findByDeviceId(id)).thenReturn(null);
         try {
-            deviceServiceImpl.findDeviceById("2");
+            deviceServiceImpl.findDeviceById(id);
         } catch (DeviceNotFoundException e) {
-            assertEquals("no device found for this id",e.getMessage());
+            assertEquals("device not found",e.getMessage());
             throw e; }
         fail("shouldReturnDeviceNotFoundExceptionIfNoDeviCeIsFound failed");
     }

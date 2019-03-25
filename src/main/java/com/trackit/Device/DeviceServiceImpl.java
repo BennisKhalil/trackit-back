@@ -12,7 +12,10 @@ public class DeviceServiceImpl implements DeviceService {
     @Autowired
     private DeviceRepo deviceRepo;
 
-    public DeviceDto mapToDeviceDto(Device device){
+    public DeviceDto mapToDeviceDto(Device device) throws DeviceNotFoundException {
+        if (device==null){
+            throw new DeviceNotFoundException("device not found");
+        }
         return DeviceDto.builder()
                 .deviceId(device.getDeviceId())
                 .lat(device.getLat())
@@ -25,7 +28,7 @@ public class DeviceServiceImpl implements DeviceService {
     public DeviceDto findDeviceById(String deviceId) throws DeviceNotFoundException {
         DeviceDto deviceDto = mapToDeviceDto(deviceRepo.findByDeviceId(deviceId));
         if(deviceDto==null){
-            throw new DeviceNotFoundException("no device found for this id");
+            throw new DeviceNotFoundException("device not found");
         }
         return  deviceDto;
     }

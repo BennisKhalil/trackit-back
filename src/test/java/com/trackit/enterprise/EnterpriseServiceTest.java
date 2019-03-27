@@ -1,6 +1,10 @@
 package com.trackit.enterprise;
 
+import com.trackit.exception.EnterpriseAlreadyExistsException;
+import com.trackit.exception.EnterpriseNotFoundException;
+import net.bytebuddy.asm.Advice;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -8,6 +12,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -23,7 +28,7 @@ public class EnterpriseServiceTest {
 
 
     @Test
-    public void WhenFetchingCarsByEnterpriseShouldReturnTheCars() {
+    public void WhenFetchingEnterprisesShouldReturnTheEnterprises() {
         Enterprise enterprise1 = new Enterprise();
         enterprise1.setId(1);
         enterprise1.setName("TestEnterprise1");
@@ -47,36 +52,84 @@ public class EnterpriseServiceTest {
 
 
     @Test
-    public void WhenSavingInterpriseShouldCallPersistMethod() {
-        EnterpriseDTO enterpriseDTO = new EnterpriseDTO();
-        enterpriseDTO.setId(1);
-
-        enterpriseService.addOrUpdateEntreprise(enterpriseDTO);
-        verify(enterpriseRepo, times(1)).save(any(Enterprise.class));
-
+    public void WhenFetchingEnterpriseByInvalidIdShouldThrowEnterpriseNotFoundException(){
+        when(enterpriseRepo.existsById(1)).thenReturn(false);
+        EnterpriseNotFoundException thrown = Assertions.assertThrows(EnterpriseNotFoundException.class,()->{enterpriseService.findEnterpriseById(1);});
+        assertEquals(thrown.getMessage(), "No Enterprise Found with the Id "+1);
     }
 
     @Test
-    public void WhenUpdateCarShouldCallPersistMethod() {
+    public void WhenFetchingEnterpriseByIdShouldReturnEnterprise() throws EnterpriseNotFoundException {
+        when(enterpriseRepo.existsById(1)).thenReturn(true);
+        when(enterpriseRepo.findById(1)).thenReturn(Optional.of(Enterprise.builder().id(1).build()));
+        EnterpriseDTO enterpriseDTO= enterpriseService.findEnterpriseById(1);
+        verify(enterpriseRepo,times(1)).findById(1);
+        assertEquals(enterpriseDTO.getId(), Integer.valueOf(1));
+    }
+    @Test
+    public void WhenSavingEnterpriseWithExistingIdShouldThrowEnterpriseAlreadyExistsException() {
         EnterpriseDTO enterpriseDTO = new EnterpriseDTO();
         enterpriseDTO.setId(1);
         enterpriseDTO.setName("trackit");
 
-        enterpriseService.addOrUpdateEntreprise(enterpriseDTO);
-
-        enterpriseDTO.setName("trackme");
-
-        EnterpriseDTO enterpriseDTOResult = enterpriseService.addOrUpdateEntreprise(enterpriseDTO);
-
-        verify(enterpriseRepo, times(2)).save(any(Enterprise.class));
-        assertEquals(enterpriseDTOResult.getName(),"trackme");
+        when(enterpriseRepo.existsById(1)).thenReturn(true);
+        EnterpriseAlreadyExistsException thrown = Assertions.assertThrows(EnterpriseAlreadyExistsException.class, () -> {
+            enterpriseService.addEnterprise(enterpriseDTO);
+        });
+        assertEquals(thrown.getMessage(), "An Enterprise with the id 1 already exists");
 
     }
 
+
     @Test
-    public void WhenDeleteCarShouldCallDeleteMethod(){
+    public void WhenSavingEnterpriseShouldCallPersistMethod() throws EnterpriseAlreadyExistsException {
+        EnterpriseDTO enterpriseDTO = new EnterpriseDTO();
+        enterpriseDTO.setId(1);
+        when(enterpriseRepo.getOne(1)).thenReturn(Enterprise.builder().id(1).build());
+
+        enterpriseService.addEnterprise(enterpriseDTO);
+        verify(enterpriseRepo, times(1)).save(any(Enterprise.class));
+
+    }
+
+
+    @Test
+    public void WhenUpdateEnterpriseThatDoesntExistShouldThrowEnterpriseDoesntExist() {
+        EnterpriseDTO enterpriseDTO = new EnterpriseDTO();
+        enterpriseDTO.setId(1);
+        enterpriseDTO.setName("trackit");
+
+        when(enterpriseRepo.existsById(1)).thenReturn(false);
+
+        EnterpriseNotFoundException thrown = Assertions.assertThrows(EnterpriseNotFoundException.class, () -> {
+            enterpriseService.updateEnterprise(enterpriseDTO);
+        });
+        assertEquals(thrown.getMessage(), "No Enterprise Found with the Id 1");
+    }
+
+    @Test
+    public void WhenUpdateEnterpriseShouldCallPersistMethod() throws EnterpriseNotFoundException {
+        EnterpriseDTO enterpriseDTO = new EnterpriseDTO();
+        enterpriseDTO.setId(1);
+        enterpriseDTO.setName("trackit");
+
+        when(enterpriseRepo.getOne(1)).thenReturn(enterpriseService.maptoEnterprise(enterpriseDTO));
+        when(enterpriseRepo.existsById(1)).thenReturn(true);
+        enterpriseService.updateEnterprise(enterpriseDTO);
+
+        enterpriseDTO.setName("trackme");
+        when(enterpriseRepo.getOne(1)).thenReturn(enterpriseService.maptoEnterprise(enterpriseDTO));
+
+        EnterpriseDTO enterpriseDTOResult = enterpriseService.updateEnterprise(enterpriseDTO);
+
+        verify(enterpriseRepo, times(2)).save(any(Enterprise.class));
+        assertEquals(enterpriseDTOResult.getName(), "trackme");
+    }
+
+    @Test
+    public void WhenDeleteEnterpriseShouldCallDeleteMethod() {
         enterpriseService.deleteEnterprise(1);
-        verify(enterpriseRepo,times(1)).deleteById(1);
+        verify(enterpriseRepo, times(1)).deleteById(1);
     }
 
 

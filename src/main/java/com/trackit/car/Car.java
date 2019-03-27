@@ -32,11 +32,11 @@ public class Car {
 
 	private String fuelConsumption;
 
-	@OneToOne(cascade=CascadeType.PERSIST, fetch = FetchType.EAGER)
+	@OneToOne(cascade=CascadeType.PERSIST, fetch = FetchType.LAZY)
 	@JoinColumn(name="driver_id")
 	private Driver driver;
 	
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne
 	@JoinColumn(name = "enterprise_id")
 	 private Enterprise enterprise;
 	 

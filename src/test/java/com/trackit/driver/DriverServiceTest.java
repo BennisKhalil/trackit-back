@@ -3,12 +3,14 @@ package com.trackit.driver;
 
 import com.trackit.car.Car;
 import com.trackit.car.CarRepo;
-import com.trackit.driver.*;
 import com.trackit.enterprise.Enterprise;
 import com.trackit.enterprise.EnterpriseRepo;
 import com.trackit.exception.CarsNotFoundException;
+import com.trackit.exception.DriverAlreadyExistsException;
+import com.trackit.exception.DriverNotFoundException;
 import com.trackit.exception.EnterpriseNotFoundException;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -17,10 +19,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
@@ -42,51 +43,16 @@ public class DriverServiceTest {
 
     @Test
     public void WhenEnterpriseNotFoundShouldThrowEnterpriseNotFoundException() {
-        when(enterpriseRepo.findById(1)).thenReturn(Optional.empty());
-        EnterpriseNotFoundException thrown =assertThrows(EnterpriseNotFoundException.class,
-                ()-> {driverService.findAllDriversByEnterpriseId(1);});
+        when(enterpriseRepo.existsById(1)).thenReturn(false);
+        EnterpriseNotFoundException thrown = assertThrows(EnterpriseNotFoundException.class,
+                () -> {
+                    driverService.findAllDriversByEnterpriseId(1);
+                });
 
         assertTrue(thrown.getMessage().equals("No Enterprise Found with the id 1"));
 
     }
 
-
-
-    @Test
-    public void WhenUpdateOrSaveWithoutValidCarIdShouldReturnNoCarFoundException(){
-        DriverDTO driverDTO = DriverDTO.builder()
-                .enterprise(1)
-                .firstName("khalil")
-                .car("2")
-                .lastName("bennis")
-                .birthDay("12/08/2002")
-                .employedDate("06/12/2002")
-                .build();
-
-        when(carRepo.findById("2")).thenReturn(Optional.empty());
-
-
-        CarsNotFoundException thrown = assertThrows(CarsNotFoundException.class, ()-> {driverService.addOrUpdateDriver(driverDTO);});
-        assertEquals(thrown.getMessage(), "No Car Found with the Id 2");
-    }
-
-    @Test
-    public void WhenUpdateOrSaveWithoutValidEnterpriseIdShouldReturnNoCarFoundException(){
-        DriverDTO driverDTO = DriverDTO.builder()
-                .enterprise(1)
-                .firstName("khalil")
-                .car("2")
-                .lastName("bennis")
-                .birthDay("12/08/2002")
-                .employedDate("06/12/2002")
-                .build();
-
-        when(enterpriseRepo.findById(1)).thenReturn(Optional.empty());
-        when(carRepo.findById("2")).thenReturn(Optional.of(new Car()));
-
-        EnterpriseNotFoundException thrown = assertThrows(EnterpriseNotFoundException.class, ()-> {driverService.addOrUpdateDriver(driverDTO);});
-        assertEquals(thrown.getMessage(), "No Enterprise Found with the Id 1");
-    }
 
     @Test
     public void WhenFetchingDriversByEnterpriseShouldReturnTheDrivers() throws EnterpriseNotFoundException {
@@ -97,90 +63,159 @@ public class DriverServiceTest {
 
         List<Driver> mockedDrivers = new ArrayList<>();
 
-        Driver driver1 = new Driver();
-        driver1.setId(1);
-        driver1.setFirstName("driver1");
-        driver1.setEnterprise(enterprise);
-        driver1.setBirthDay(LocalDate.now());
-        driver1.setEmployedDate(LocalDate.now());
-        driver1.setCar(Car.builder().Id("1").build());
+        Driver driver1 = Driver.builder().Id(1)
+                .firstName("driver1")
+                .enterprise(enterprise)
+                .birthDay(LocalDate.now())
+                .employedDate(LocalDate.now())
+                .car(Car.builder().Id("1").build())
+                .build();
 
-        Driver driver2 = new Driver();
-        driver2.setId(2);
-        driver2.setFirstName("driver2");
-        driver2.setEnterprise(enterprise);
-        driver2.setBirthDay(LocalDate.now());
-        driver2.setEmployedDate(LocalDate.now());
-        driver2.setCar(Car.builder().Id("2").build());
+        Driver driver2 = Driver.builder().Id(2)
+                .firstName("driver2")
+                .enterprise(enterprise)
+                .birthDay(LocalDate.now())
+                .employedDate(LocalDate.now())
+                .car(Car.builder().Id("2").build())
+                .build();
 
         mockedDrivers.add(driver1);
         mockedDrivers.add(driver2);
 
         enterprise.setDrivers(mockedDrivers);
-        when(enterpriseRepo.findById(1)).thenReturn(Optional.of(enterprise));
-        when(driverRepo.findByEnteprise(enterprise)).thenReturn(mockedDrivers);
+        when(enterpriseRepo.existsById(1)).thenReturn(true);
+        when(driverRepo.findByEnterpriseId(1)).thenReturn(mockedDrivers);
 
         List<DriverDTO> drivers = driverService.findAllDriversByEnterpriseId(1);
 
         assertEquals(2, drivers.size());
         assertEquals(new Integer(1), drivers.get(0).getEnterprise());
-        verify(enterpriseRepo, times(1)).findById(1);
-        verify(driverRepo, times(1)).findByEnteprise(enterprise);
+        verify(enterpriseRepo, times(1)).existsById(1);
+        verify(driverRepo, times(1)).findByEnterpriseId(1);
+        verifyNoMoreInteractions(enterpriseRepo);
     }
 
 
     @Test
-    public void WhenSaveCarShouldCallPersistMethod() throws CarsNotFoundException, EnterpriseNotFoundException {
+    public void WhenSaveDriverWithExistingIdShouldReturnCarAlreadyExistsException() {
+        when(driverRepo.existsById(1)).thenReturn(true);
+        DriverDTO driverDTO = DriverDTO.builder().Id(1).enterprise(1).build();
+        DriverAlreadyExistsException thrown = Assertions.assertThrows(DriverAlreadyExistsException.class, () -> {
+            driverService.addDriver(driverDTO);
+        });
+        assertEquals(thrown.getMessage(), "Driver with the Id " + driverDTO.getId() + " Already Exists");
+    }
+
+    @Test
+    public void WhenSaveDriverWithInvalidCarIdShouldReturnCarAlreadyExistsException() {
+        when(driverRepo.existsById(1)).thenReturn(false);
+        when(carRepo.existsById("1")).thenReturn(false);
+        DriverDTO driverDTO = DriverDTO.builder().Id(1).enterprise(1).car("1").build();
+        CarsNotFoundException thrown = Assertions.assertThrows(CarsNotFoundException.class, () -> {
+            driverService.addDriver(driverDTO);
+        });
+        assertEquals(thrown.getMessage(), "No Car Found with the Id " + driverDTO.getCar());
+    }
+
+    @Test
+    public void WhenSaveDriverWithInvalidEnterpriseIdShouldReturnCarAlreadyExistsException() {
+        when(driverRepo.existsById(1)).thenReturn(false);
+        when(carRepo.existsById("1")).thenReturn(true);
+        when(enterpriseRepo.existsById(1)).thenReturn(false);
+        DriverDTO driverDTO = DriverDTO.builder().Id(1).enterprise(1).car("1").build();
+        EnterpriseNotFoundException thrown = Assertions.assertThrows(EnterpriseNotFoundException.class, () -> {
+            driverService.addDriver(driverDTO);
+        });
+        assertEquals(thrown.getMessage(), "No Enterprise Found with the Id " + driverDTO.getEnterprise());
+    }
+
+
+    @Test
+    public void WhenSaveDriverShouldCallPersistMethod() throws CarsNotFoundException, EnterpriseNotFoundException, DriverAlreadyExistsException {
+        when(driverRepo.existsById(1)).thenReturn(false);
+        when(carRepo.existsById("1")).thenReturn(true);
+        when(enterpriseRepo.existsById(1)).thenReturn(true);
         DriverDTO driverDTO = DriverDTO.builder()
-                .enterprise(1)
+                .Id(1).enterprise(1)
+                .car("1")
                 .firstName("Smith")
-                .car("2")
-                .lastName("Doe")
                 .birthDay("12/08/2002")
-                .employedDate("06/12/2002")
+                .employedDate("25/12/2009")
                 .build();
 
-        when(enterpriseRepo.findById(1)).thenReturn(Optional.of(new Enterprise()));
-        when(carRepo.findById("2")).thenReturn(Optional.of(new Car()));
-
-        DriverDTO driverDTOResult = driverService.addOrUpdateDriver(driverDTO);
+        DriverDTO driverDTOResult = driverService.addDriver(driverDTO);
 
         verify(driverRepo, times(1)).save(any(Driver.class));
-        assertEquals(driverDTOResult.getFirstName(),"Smith");
+        assertEquals(driverDTOResult.getFirstName(), "Smith");
 
     }
 
 
     @Test
-    public void WhenUpdateCarShouldCallPersistMethod() throws CarsNotFoundException, EnterpriseNotFoundException {
+    public void WhenUpdateDriverWithInvalidIdShouldReturnCarAlreadyExistsException() {
+        when(driverRepo.existsById(1)).thenReturn(false);
+        DriverDTO driverDTO = DriverDTO.builder().Id(1).enterprise(1).build();
+        DriverNotFoundException thrown = Assertions.assertThrows(DriverNotFoundException.class, () -> {
+            driverService.updateDriver(driverDTO);
+        });
+        assertEquals(thrown.getMessage(), "No Driver Found with the Id " + driverDTO.getId());
+    }
+
+    @Test
+    public void WhenUpdateCarWithInvalidCarIdShouldReturnCarAlreadyExistsException() {
+        when(driverRepo.existsById(1)).thenReturn(true);
+        when(carRepo.existsById("1")).thenReturn(false);
+        DriverDTO driverDTO = DriverDTO.builder().Id(1).enterprise(1).car("1").build();
+        CarsNotFoundException thrown = Assertions.assertThrows(CarsNotFoundException.class, () -> {
+            driverService.updateDriver(driverDTO);
+        });
+        assertEquals(thrown.getMessage(), "No Car Found with the Id " + driverDTO.getCar());
+    }
+
+    @Test
+    public void WhenUpdateCarWithInvalidEnterpriseIdShouldReturnCarAlreadyExistsException() {
+        when(driverRepo.existsById(1)).thenReturn(true);
+        when(carRepo.existsById("1")).thenReturn(true);
+        when(enterpriseRepo.existsById(1)).thenReturn(false);
+        DriverDTO driverDTO = DriverDTO.builder().Id(1).enterprise(1).car("1").build();
+        EnterpriseNotFoundException thrown = Assertions.assertThrows(EnterpriseNotFoundException.class, () -> {
+            driverService.updateDriver(driverDTO);
+        });
+        assertEquals(thrown.getMessage(), "No Enterprise Found with the Id " + driverDTO.getEnterprise());
+    }
+
+
+    @Test
+    public void WhenUpdateCarShouldCallPersistMethod() throws CarsNotFoundException, EnterpriseNotFoundException, DriverNotFoundException {
+        when(driverRepo.existsById(1)).thenReturn(true);
+        when(carRepo.existsById("1")).thenReturn(true);
+        when(enterpriseRepo.existsById(1)).thenReturn(true);
+
         DriverDTO driverDTO = DriverDTO.builder()
+                .Id(1)
                 .enterprise(1)
                 .firstName("Smith")
-                .car("2")
+                .car("1")
                 .lastName("Doe")
                 .birthDay("12/08/2002")
                 .employedDate("06/12/2002")
                 .build();
 
-        when(enterpriseRepo.findById(1)).thenReturn(Optional.of(new Enterprise()));
-        when(carRepo.findById("2")).thenReturn(Optional.of(new Car()));
-
-        driverService.addOrUpdateDriver(driverDTO);
+        driverService.updateDriver(driverDTO);
 
         driverDTO.setFirstName("Doe");
 
-        DriverDTO driverDTOResult = driverService.addOrUpdateDriver(driverDTO);
+        DriverDTO driverDTOResult = driverService.updateDriver(driverDTO);
 
         verify(driverRepo, times(2)).save(any(Driver.class));
-        assertEquals(driverDTOResult.getFirstName(),"Doe");
+        assertEquals(driverDTOResult.getFirstName(), "Doe");
 
     }
 
     @Test
-    public void WhenDeleteCarShouldCallDeleteMethod(){
+    public void WhenDeleteCarShouldCallDeleteMethod() {
         driverService.deleteDriver(1);
-        verify(driverRepo,times(1)).deleteById(1);
-
+        verify(driverRepo, times(1)).deleteById(1);
     }
 
 }

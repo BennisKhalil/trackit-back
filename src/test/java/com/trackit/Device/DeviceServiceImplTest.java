@@ -32,7 +32,7 @@ public class DeviceServiceImplTest {
     @Before
     public  void init(){
         device = Device.builder()
-                .deviceId("1").lat(Float.valueOf(33)).lon(Float.valueOf(6)).build();
+                .deviceId("1").lat(Double.valueOf(33)).lon(Double.valueOf(6)).build();
     }
 
 
@@ -42,8 +42,8 @@ public class DeviceServiceImplTest {
         when(deviceRepo.findByDeviceId("1")).thenReturn(device);
         deviceDto = deviceServiceImpl.findDeviceById("1");
         Assert.assertNotNull(deviceDto);
-        Assert.assertEquals(Float.valueOf(33),deviceDto.getLat());
-        Assert.assertEquals(Float.valueOf(6),deviceDto.getLon());
+        Assert.assertEquals(Double.valueOf(33),deviceDto.getLat());
+        Assert.assertEquals(Double.valueOf(6),deviceDto.getLon());
         verify(deviceRepo,times(1)).findByDeviceId("1");
         verifyNoMoreInteractions(deviceRepo);
 

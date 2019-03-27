@@ -29,7 +29,7 @@ public class DeviceControllerTest {
     public void ShouldReturnDeviceWhenCalling_getDeviceByDeviceId() throws Exception {
 
         when(deviceServiceImpl.findDeviceById("100")).thenReturn(DeviceDto.builder().deviceId("100")
-                .lat(Float.valueOf(3)).lon(Float.valueOf(5)).build());
+                .lat(Double.valueOf(3)).lon(Double.valueOf(5)).build());
         mockMvc.perform(get("/device/{deviceId}","100"))
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.deviceId").exists())

@@ -1,8 +1,7 @@
-package com.trackit.Device;
+package com.trackit.device;
 
 
 import com.trackit.exception.DeviceNotFoundException;
-import lombok.Builder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

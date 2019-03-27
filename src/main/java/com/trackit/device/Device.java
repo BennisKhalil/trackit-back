@@ -1,11 +1,11 @@
-package com.trackit.Device;
+package com.trackit.device;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 
-@Document(indexName="device_data",type="device")
+@Document(indexName="device_rt",type="real_time_device")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -159,7 +159,8 @@ public class Device {
 
     private Integer fuelRailAbsolutePressure;
 
-
+    @JsonProperty("lat")
+    
     private Double lat;
 
     @JsonProperty("long")
@@ -167,3 +168,4 @@ public class Device {
     private Double lon;
 
 }
+

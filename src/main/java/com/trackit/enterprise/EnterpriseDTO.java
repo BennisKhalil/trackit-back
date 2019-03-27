@@ -2,6 +2,9 @@ package com.trackit.enterprise;
 
 import lombok.*;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 
@@ -13,15 +16,22 @@ import java.util.List;
 @Builder
 public class EnterpriseDTO {
 
+    @NotNull
     private Integer id;
 
+    @NotNull
+    @NotEmpty
     private String name;
 
+    @NotNull
+    @NotEmpty
     private String address;
+
 
     private List<String> carsIds;
 
     private List<Integer> driverIds;
 
-    private String nbCars;
+    @Min(0)
+    private Integer nbCars;
 }

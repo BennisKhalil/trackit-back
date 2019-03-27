@@ -31,14 +31,14 @@ public class Enterprise {
 
 	private String address;
 
-	@OneToMany(mappedBy = "enterprise", cascade = CascadeType.ALL, orphanRemoval = true, fetch=FetchType.EAGER)
+	@OneToMany(mappedBy = "enterprise", orphanRemoval = true)
 	private List<Car> cars;
 
-	@OneToMany(mappedBy = "enterprise", cascade = CascadeType.ALL, orphanRemoval = true, fetch=FetchType.EAGER)
+	@OneToMany(mappedBy = "enterprise", orphanRemoval = true)
 	private List<Driver> drivers;
 	
 	@Formula("(select count(*) from car c where c.enterprise_id = id)")
-	private String nbCars;
+	private Integer nbCars;
 
 	
 	

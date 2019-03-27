@@ -6,6 +6,9 @@ import java.util.stream.Collectors;
 import com.trackit.car.Car;
 import com.trackit.car.CarRepo;
 import com.trackit.driver.Driver;
+import com.trackit.driver.DriverRepo;
+import com.trackit.exception.EnterpriseAlreadyExistsException;
+import com.trackit.exception.EnterpriseNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,15 +20,38 @@ public class EnterpriseServiceImpl implements EnterpriseService{
 
 	@Autowired
 	private CarRepo carRepo;
+
+	@Autowired
+	private DriverRepo driverRepo;
+
 	@Override
 	public List<EnterpriseDTO> findAllEnterprise() {
 		return mapToEnterpriseDTOList(enterpriseRepo.findAll());
 	}
 
 	@Override
-	public EnterpriseDTO addOrUpdateEntreprise(EnterpriseDTO enterpriseDTO) {
+	public EnterpriseDTO findEnterpriseById(Integer id) throws EnterpriseNotFoundException {
+		if(!enterpriseRepo.existsById(id))
+			throw new EnterpriseNotFoundException("No Enterprise Found with the Id ",id);
+		return mapToEnterpriseDTO(enterpriseRepo.getOne(id));
+	}
+
+
+
+	@Override
+	public EnterpriseDTO addEnterprise(EnterpriseDTO enterpriseDTO) throws EnterpriseAlreadyExistsException {
+		if (enterpriseRepo.existsById(enterpriseDTO.getId()))
+			throw new EnterpriseAlreadyExistsException("An Enterprise with the id "+enterpriseDTO.getId()+" already exists");
 		enterpriseRepo.save(maptoEnterprise(enterpriseDTO));
-		return enterpriseDTO;
+		return mapToEnterpriseDTO(enterpriseRepo.getOne(enterpriseDTO.getId()));
+	}
+
+	@Override
+	public EnterpriseDTO updateEnterprise(EnterpriseDTO enterpriseDTO) throws EnterpriseNotFoundException {
+		if (!enterpriseRepo.existsById(enterpriseDTO.getId()))
+			throw new EnterpriseNotFoundException("No Enterprise Found with the Id ",enterpriseDTO.getId());
+		enterpriseRepo.save(maptoEnterprise(enterpriseDTO));
+		return mapToEnterpriseDTO(enterpriseRepo.getOne(enterpriseDTO.getId()));
 	}
 
 
@@ -37,11 +63,18 @@ public class EnterpriseServiceImpl implements EnterpriseService{
 
 	public Enterprise maptoEnterprise(EnterpriseDTO enterpriseDTO){
 		List<String> carsIds = enterpriseDTO.getCarsIds();
+		List<Integer> driverIds = enterpriseDTO.getDriverIds();
 		List<Car> cars = null;
+		List<Driver> drivers = null;
 		if (carsIds != null) {
 			cars = carsIds.parallelStream()
 					       .map(id -> carRepo.findById(id).get())
 					       .collect(Collectors.toList());
+		}
+		if (driverIds != null) {
+			drivers = driverIds.parallelStream()
+					.map(id -> driverRepo.findById(id).get())
+					.collect(Collectors.toList());
 		}
 
 		return Enterprise.builder()
@@ -49,6 +82,7 @@ public class EnterpriseServiceImpl implements EnterpriseService{
 				.name(enterpriseDTO.getName())
 				.address(enterpriseDTO.getAddress())
 				.cars(cars)
+				.drivers(drivers)
 				.nbCars(enterpriseDTO.getNbCars())
 				.build();
 	}
@@ -85,6 +119,33 @@ public class EnterpriseServiceImpl implements EnterpriseService{
 							.nbCars(enterprise.getNbCars())
 							.build();
 				}).collect(Collectors.toList());
+	}
+
+	public static EnterpriseDTO mapToEnterpriseDTO(Enterprise enterprise){
+		List<Car> cars = enterprise.getCars();
+		List<Driver> drivers = enterprise.getDrivers();
+		List<String> carsIds = null;
+		List<Integer> driverIds = null;
+
+		if (cars != null) {
+			carsIds = cars.parallelStream()
+					.map(car -> car.getId())
+					.collect(Collectors.toList());
+		}
+		if (drivers != null) {
+			driverIds = drivers.parallelStream()
+					.map(driver -> driver.getId())
+					.collect(Collectors.toList());
+		}
+
+		return EnterpriseDTO.builder()
+				.id(enterprise.getId())
+				.name(enterprise.getName())
+				.address(enterprise.getAddress())
+				.carsIds(carsIds)
+				.driverIds(driverIds)
+				.nbCars(enterprise.getNbCars())
+				.build();
 	}
 
 }

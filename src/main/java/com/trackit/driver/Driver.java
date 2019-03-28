@@ -1,13 +1,11 @@
 package com.trackit.driver;
 
-import java.time.LocalDate;
-
-import javax.persistence.*;
-
 import com.trackit.car.Car;
-
 import com.trackit.enterprise.Enterprise;
 import lombok.*;
+
+import javax.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -17,23 +15,23 @@ import lombok.*;
 @Builder
 public class Driver {
 
-	@Id
-	@GeneratedValue
-	private Integer id;
+    @Id
+    @GeneratedValue
+    private Integer id;
 
-	private String firstName;
+    private String firstName;
 
-	private String lastName;
+    private String lastName;
 
-	private LocalDate birthDay;
+    private LocalDate birthDay;
 
-	private LocalDate employedDate;
+    private LocalDate employedDate;
 
-	@OneToOne(mappedBy= "driver",fetch = FetchType.EAGER, cascade = CascadeType.PERSIST, optional = false)
-	private Car car;
+    @OneToOne(mappedBy = "driver", fetch = FetchType.EAGER)
+    private Car car;
 
-	@ManyToOne
-	@JoinColumn(name = "enterprise_id")
-	private Enterprise enterprise;
+    @ManyToOne
+    @JoinColumn(name = "enterprise_id")
+    private Enterprise enterprise;
 
 }

@@ -40,16 +40,16 @@ public class EnterpriseServiceImpl implements EnterpriseService{
 
 	@Override
 	public EnterpriseDTO addEnterprise(EnterpriseDTO enterpriseDTO) throws EnterpriseAlreadyExistsException {
-		enterpriseRepo.save(maptoEnterprise(enterpriseDTO));
-		return enterpriseDTO;
+		Enterprise enterprise = enterpriseRepo.saveAndFlush(maptoEnterprise(enterpriseDTO));
+		return mapToEnterpriseDTO(enterprise);
 	}
 
 	@Override
 	public EnterpriseDTO updateEnterprise(EnterpriseDTO enterpriseDTO) throws EnterpriseNotFoundException {
 		if (!enterpriseRepo.existsById(enterpriseDTO.getId()))
 			throw new EnterpriseNotFoundException("No Enterprise Found with the Id ",enterpriseDTO.getId());
-		enterpriseRepo.save(maptoEnterprise(enterpriseDTO));
-		return enterpriseDTO;
+		Enterprise enterprise = enterpriseRepo.saveAndFlush(maptoEnterprise(enterpriseDTO));
+		return  mapToEnterpriseDTO(enterprise);
 	}
 
 
@@ -131,9 +131,10 @@ public class EnterpriseServiceImpl implements EnterpriseService{
 					.collect(Collectors.toList());
 		}
 		if (drivers != null) {
-			driverIds = drivers.parallelStream()
+			driverIds = drivers.stream()
 					.map(driver -> driver.getId())
 					.collect(Collectors.toList());
+			System.out.println(drivers);
 		}
 
 		return EnterpriseDTO.builder()

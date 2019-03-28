@@ -54,6 +54,19 @@ public class CarControllerTest {
     }
 
     @Test
+    public void WhenFetchingCarWithIdShouldReturnCarInAMessage() throws Exception {
+        CarDTO carDTO = CarDTO.builder().id("1").brand("volvo").model("mod").enterprise(1).build();
+        when(carService.getCar("1")).thenReturn(carDTO);
+        mvc.perform(MockMvcRequestBuilders
+                .get("/cars/1"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[*].id").exists());
+        verify(carService, times(1)).getCar("1");
+        verifyNoMoreInteractions(carService);
+    }
+    @Test
     public void WhenAddingCarShouldReturnTheAddedEntity() throws Exception {
         CarDTO car = CarDTO.builder().id("1").brand("volvo").model("mod").enterprise(1).build();
         when(carService.addCar(any(CarDTO.class))).thenReturn(car);

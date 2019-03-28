@@ -36,6 +36,17 @@ public class DriverController {
         return new ResponseEntity<>(driverMessage, HttpStatus.OK);
     }
 
+    @GetMapping("/{id}")
+    private ResponseEntity<DriverMessage> getDriverById(@PathVariable Integer id) throws DriverNotFoundException {
+        DriverDTO driver = driverService.getDriver(id);
+        DriverMessage driverMessage = DriverMessage.builder()
+                .date(LocalDateTime.now().format(Utils.LocalDateTimeFormatter))
+                .path("/drivers/"+id)
+                .drivers(Collections.singletonList(driver))
+                .build();
+        return new ResponseEntity<>(driverMessage, HttpStatus.OK);
+    }
+
     @PostMapping
     private ResponseEntity<DriverMessage> addDriver(@Valid @RequestBody DriverDTO driverDTO) throws EnterpriseNotFoundException, DriverAlreadyExistsException, CarsNotFoundException {
         DriverDTO driver = driverService.addDriver(driverDTO);

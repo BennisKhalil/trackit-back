@@ -11,6 +11,8 @@ public interface CarService {
 
     List<CarDTO> findCarsByEnterpriseId(Integer id) throws EnterpriseNotFoundException;
 
+    CarDTO getCar(String id) throws CarsNotFoundException;
+
     CarDTO addCar(CarDTO car) throws CarAlreadyExistsException, DriverNotFoundException, EnterpriseNotFoundException;
 
     CarDTO updateCar(CarDTO car) throws CarsNotFoundException, DriverNotFoundException, EnterpriseNotFoundException;

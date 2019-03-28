@@ -35,17 +35,25 @@ public class DriverServiceImpl implements DriverService{
 	}
 
 	@Override
-	public DriverDTO addDriver(DriverDTO driverDTO) throws CarsNotFoundException, DriverAlreadyExistsException, EnterpriseNotFoundException {
-		addOrUpdate(driverDTO);
-		return driverDTO;
+	public DriverDTO getDriver(Integer id) throws DriverNotFoundException {
+		if(!driverRepo.existsById(id)){
+			throw new DriverNotFoundException("No Driver Found with the Id ",id);
+		}
+		return maptoDriverDTO(driverRepo.getOne(id));
+	}
+
+	@Override
+	public DriverDTO addDriver(DriverDTO driverDTO) throws CarsNotFoundException, EnterpriseNotFoundException {
+		Driver driver = addOrUpdate(driverDTO);
+		return maptoDriverDTO(driver);
 	}
 
 	@Override
 	public DriverDTO updateDriver(DriverDTO driverDTO) throws CarsNotFoundException, EnterpriseNotFoundException, DriverNotFoundException {
 		if(!driverRepo.existsById(driverDTO.getId()))
 			throw new DriverNotFoundException("No Driver Found with the Id ",driverDTO.getId());
-		addOrUpdate(driverDTO);
-		return driverDTO;
+		Driver driver = addOrUpdate(driverDTO);
+		return maptoDriverDTO(driver);
 	}
 
 	@Override
@@ -83,20 +91,20 @@ public class DriverServiceImpl implements DriverService{
 								.firstName(driverDTO.getFirstName())
 								.lastName(driverDTO.getLastName())
 								.birthDay(LocalDate.parse(driverDTO.getBirthDay(),Utils.formatter))
-								.employedDate(LocalDate.parse(driverDTO.getBirthDay(),Utils.formatter))
+								.employedDate(LocalDate.parse(driverDTO.getEmployedDate(),Utils.formatter))
 								.car(car)
 								.enterprise(enterpriseRepo.getOne(driverDTO.getEnterprise()))
 								.build();
 
 	}
 
-	public void addOrUpdate(DriverDTO driverDTO) throws CarsNotFoundException, EnterpriseNotFoundException {
+	public Driver addOrUpdate(DriverDTO driverDTO) throws CarsNotFoundException, EnterpriseNotFoundException {
 		if(driverDTO.getCar() != null && !carRepo.existsById(driverDTO.getCar()))
 			throw new CarsNotFoundException("No Car Found with the Id ",driverDTO.getCar());
 		if(!enterpriseRepo.existsById(driverDTO.getEnterprise()))
 			throw new EnterpriseNotFoundException("No Enterprise Found with the Id ",driverDTO.getEnterprise());
 		Driver driver = mapToDriver(driverDTO);
-		driverRepo.save(driver);
+		return driverRepo.saveAndFlush(driver);
 	}
 
 	public DriverDTO maptoDriverDTO(Driver driver){

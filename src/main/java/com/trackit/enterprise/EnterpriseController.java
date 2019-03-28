@@ -37,7 +37,7 @@ public class EnterpriseController {
 
     @GetMapping("/{id}")
     public ResponseEntity<EnterpriseMessage> fetchEnterpriseById(@PathVariable Integer id) throws EnterpriseNotFoundException {
-        EnterpriseDTO enterprise = enterpriseService.findEnterpriseById(1);
+        EnterpriseDTO enterprise = enterpriseService.findEnterpriseById(id);
         EnterpriseMessage enterpriseMessage = EnterpriseMessage.builder()
                 .date(LocalDateTime.now().format(Utils.LocalDateTimeFormatter))
                 .path("/enterprises")

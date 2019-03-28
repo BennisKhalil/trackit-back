@@ -35,6 +35,13 @@ public class CarServiceImpl implements CarService{
 	}
 
 	@Override
+	public CarDTO getCar(String id) throws CarsNotFoundException {
+		if(!carRepo.existsById(id))
+			throw new CarsNotFoundException("No Car Found with the Id ",id);
+		return mapToCarDTO(carRepo.getOne(id));
+	}
+
+	@Override
 	public CarDTO addCar(CarDTO carDTO) throws CarAlreadyExistsException, DriverNotFoundException, EnterpriseNotFoundException {
 		if(carRepo.existsById(carDTO.getId()))
 			throw new CarAlreadyExistsException("Car with the Id "+carDTO.getId()+" Already Exists");

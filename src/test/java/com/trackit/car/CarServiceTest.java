@@ -8,6 +8,7 @@ import com.trackit.exception.CarAlreadyExistsException;
 import com.trackit.exception.CarsNotFoundException;
 import com.trackit.exception.DriverNotFoundException;
 import com.trackit.exception.EnterpriseNotFoundException;
+import net.bytebuddy.asm.Advice;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
@@ -74,6 +75,26 @@ public class CarServiceTest {
         assertEquals(new Integer(1), cars.get(0).getEnterprise());
         verify(carRepo, times(1)).findByEnterpriseId(1);
         verifyNoMoreInteractions(carRepo);
+    }
+
+    @Test
+    public void WhenFetchingCarWithInvalidIdShouldThrowCarNotFoundException(){
+        when(carRepo.existsById("1")).thenReturn(false);
+        CarsNotFoundException thrown =  Assertions.assertThrows(CarsNotFoundException.class,()->{carService.getCar("1");});
+        assertEquals(thrown.getMessage(), "No Car Found with the Id "+1);
+    }
+
+    @Test
+    public void WhenFetchingCarWithValidIdShouldReturnCar() throws CarsNotFoundException {
+        when(carRepo.existsById("1")).thenReturn(true);
+        Enterprise enterprise = Enterprise.builder().id(1).build();
+        when(carRepo.getOne("1")).thenReturn(Car.builder().id("1").enterprise(enterprise).build());
+
+        CarDTO carDTO = carService.getCar("1");
+        verify(carRepo, times(1)).getOne("1");
+        assertEquals(carDTO.getId(), "1");
+
+
     }
 
 

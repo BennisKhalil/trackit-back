@@ -36,10 +36,8 @@ public class DriverServiceImpl implements DriverService{
 
 	@Override
 	public DriverDTO addDriver(DriverDTO driverDTO) throws CarsNotFoundException, DriverAlreadyExistsException, EnterpriseNotFoundException {
-		if(driverRepo.existsById(driverDTO.getId()))
-			throw new DriverAlreadyExistsException("Driver with the Id "+driverDTO.getId()+" Already Exists");
 		addOrUpdate(driverDTO);
-		return maptoDriverDTO(driverRepo.getOne(driverDTO.getId()));
+		return driverDTO;
 	}
 
 	@Override
@@ -47,7 +45,7 @@ public class DriverServiceImpl implements DriverService{
 		if(!driverRepo.existsById(driverDTO.getId()))
 			throw new DriverNotFoundException("No Driver Found with the Id ",driverDTO.getId());
 		addOrUpdate(driverDTO);
-		return maptoDriverDTO(driverRepo.getOne(driverDTO.getId()));
+		return driverDTO;
 	}
 
 	@Override
@@ -65,6 +63,7 @@ public class DriverServiceImpl implements DriverService{
 							if (driver.getCar() !=null)
 								carId = driver.getCar().getId();
 							return DriverDTO.builder()
+									.id(driver.getId())
 									.enterprise(driver.getEnterprise().getId())
 									.firstName(driver.getFirstName())
 									.lastName(driver.getLastName())
@@ -95,8 +94,9 @@ public class DriverServiceImpl implements DriverService{
 		if(driverDTO.getCar() != null && !carRepo.existsById(driverDTO.getCar()))
 			throw new CarsNotFoundException("No Car Found with the Id ",driverDTO.getCar());
 		if(!enterpriseRepo.existsById(driverDTO.getEnterprise()))
-			throw new EnterpriseNotFoundException("No Enterprise Found with the Id ",driverDTO.getId());
-		driverRepo.save(mapToDriver(driverDTO));
+			throw new EnterpriseNotFoundException("No Enterprise Found with the Id ",driverDTO.getEnterprise());
+		Driver driver = mapToDriver(driverDTO);
+		driverRepo.save(driver);
 	}
 
 	public DriverDTO maptoDriverDTO(Driver driver){
@@ -107,7 +107,7 @@ public class DriverServiceImpl implements DriverService{
 				.firstName(driver.getFirstName())
 				.lastName(driver.getLastName())
 				.birthDay(driver.getBirthDay().format(Utils.formatter))
-				.employedDate(driver.getBirthDay().format(Utils.formatter))
+				.employedDate(driver.getEmployedDate().format(Utils.formatter))
 				.car(carId)
 				.enterprise(driver.getEnterprise().getId())
 				.build();

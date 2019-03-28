@@ -15,7 +15,6 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 public class DriverDTO {
 
-    @NotNull
     private Integer id;
     @NotNull
     @NotEmpty

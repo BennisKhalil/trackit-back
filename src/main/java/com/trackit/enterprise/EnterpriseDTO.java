@@ -16,7 +16,6 @@ import java.util.List;
 @Builder
 public class EnterpriseDTO {
 
-    @NotNull
     private Integer id;
 
     @NotNull

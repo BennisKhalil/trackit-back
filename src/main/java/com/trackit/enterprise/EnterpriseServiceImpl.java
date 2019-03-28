@@ -40,10 +40,8 @@ public class EnterpriseServiceImpl implements EnterpriseService{
 
 	@Override
 	public EnterpriseDTO addEnterprise(EnterpriseDTO enterpriseDTO) throws EnterpriseAlreadyExistsException {
-		if (enterpriseRepo.existsById(enterpriseDTO.getId()))
-			throw new EnterpriseAlreadyExistsException("An Enterprise with the id "+enterpriseDTO.getId()+" already exists");
 		enterpriseRepo.save(maptoEnterprise(enterpriseDTO));
-		return mapToEnterpriseDTO(enterpriseRepo.getOne(enterpriseDTO.getId()));
+		return enterpriseDTO;
 	}
 
 	@Override
@@ -51,7 +49,7 @@ public class EnterpriseServiceImpl implements EnterpriseService{
 		if (!enterpriseRepo.existsById(enterpriseDTO.getId()))
 			throw new EnterpriseNotFoundException("No Enterprise Found with the Id ",enterpriseDTO.getId());
 		enterpriseRepo.save(maptoEnterprise(enterpriseDTO));
-		return mapToEnterpriseDTO(enterpriseRepo.getOne(enterpriseDTO.getId()));
+		return enterpriseDTO;
 	}
 
 

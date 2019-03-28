@@ -31,10 +31,10 @@ public class Enterprise {
 
 	private String address;
 
-	@OneToMany(mappedBy = "enterprise", orphanRemoval = true)
+	@OneToMany(mappedBy = "enterprise")
 	private List<Car> cars;
 
-	@OneToMany(mappedBy = "enterprise", orphanRemoval = true)
+	@OneToMany(mappedBy = "enterprise")
 	private List<Driver> drivers;
 	
 	@Formula("(select count(*) from car c where c.enterprise_id = id)")

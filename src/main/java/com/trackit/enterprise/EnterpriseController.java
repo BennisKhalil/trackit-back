@@ -9,13 +9,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-@Controller
+@RestController
 @RequestMapping("/enterprises")
 public class EnterpriseController {
 
@@ -46,7 +47,7 @@ public class EnterpriseController {
     }
 
     @PostMapping
-    private ResponseEntity<EnterpriseMessage> addEnterprise(@RequestBody EnterpriseDTO enterprise) throws EnterpriseAlreadyExistsException {
+    private ResponseEntity<EnterpriseMessage> addEnterprise(@Valid @RequestBody EnterpriseDTO enterprise) throws EnterpriseAlreadyExistsException {
         EnterpriseDTO enterpriseDTOReponse = enterpriseService.addEnterprise(enterprise);
         EnterpriseMessage enterpriseMessage = EnterpriseMessage.builder()
                 .date(LocalDateTime.now().format(Utils.LocalDateTimeFormatter))
@@ -57,7 +58,7 @@ public class EnterpriseController {
     }
 
     @PutMapping
-    private ResponseEntity<EnterpriseMessage> updateEnterprise(@RequestBody EnterpriseDTO enterprise) throws EnterpriseAlreadyExistsException, EnterpriseNotFoundException {
+    private ResponseEntity<EnterpriseMessage> updateEnterprise(@Valid @RequestBody EnterpriseDTO enterprise) throws EnterpriseAlreadyExistsException, EnterpriseNotFoundException {
 
         EnterpriseDTO enterpriseDTOReponse = enterpriseService.updateEnterprise(enterprise);
         EnterpriseMessage enterpriseMessage = EnterpriseMessage.builder()

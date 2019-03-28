@@ -19,7 +19,7 @@ public class Driver {
 
 	@Id
 	@GeneratedValue
-	private Integer Id;
+	private Integer id;
 
 	private String firstName;
 
@@ -29,7 +29,7 @@ public class Driver {
 
 	private LocalDate employedDate;
 
-	@OneToOne(mappedBy= "driver",fetch = FetchType.LAZY, cascade = CascadeType.PERSIST, optional = false)
+	@OneToOne(mappedBy= "driver",fetch = FetchType.EAGER, cascade = CascadeType.PERSIST, optional = false)
 	private Car car;
 
 	@ManyToOne

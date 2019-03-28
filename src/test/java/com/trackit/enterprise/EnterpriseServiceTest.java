@@ -61,9 +61,9 @@ public class EnterpriseServiceTest {
     @Test
     public void WhenFetchingEnterpriseByIdShouldReturnEnterprise() throws EnterpriseNotFoundException {
         when(enterpriseRepo.existsById(1)).thenReturn(true);
-        when(enterpriseRepo.findById(1)).thenReturn(Optional.of(Enterprise.builder().id(1).build()));
+        when(enterpriseRepo.getOne(1)).thenReturn(Enterprise.builder().id(1).build());
         EnterpriseDTO enterpriseDTO= enterpriseService.findEnterpriseById(1);
-        verify(enterpriseRepo,times(1)).findById(1);
+        verify(enterpriseRepo,times(1)).getOne(1);
         assertEquals(enterpriseDTO.getId(), Integer.valueOf(1));
     }
     @Test

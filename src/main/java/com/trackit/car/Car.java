@@ -35,9 +35,9 @@ public class Car {
 	@OneToOne(cascade=CascadeType.PERSIST, fetch = FetchType.EAGER)
 	@JoinColumn(name="driver_id")
 	private Driver driver;
-	
+
 	@ManyToOne
 	@JoinColumn(name = "enterprise_id")
 	 private Enterprise enterprise;
-	 
+
 }

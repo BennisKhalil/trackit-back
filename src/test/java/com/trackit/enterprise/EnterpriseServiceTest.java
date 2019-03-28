@@ -66,29 +66,16 @@ public class EnterpriseServiceTest {
         verify(enterpriseRepo,times(1)).getOne(1);
         assertEquals(enterpriseDTO.getId(), Integer.valueOf(1));
     }
-    @Test
-    public void WhenSavingEnterpriseWithExistingIdShouldThrowEnterpriseAlreadyExistsException() {
-        EnterpriseDTO enterpriseDTO = new EnterpriseDTO();
-        enterpriseDTO.setId(1);
-        enterpriseDTO.setName("trackit");
-
-        when(enterpriseRepo.existsById(1)).thenReturn(true);
-        EnterpriseAlreadyExistsException thrown = Assertions.assertThrows(EnterpriseAlreadyExistsException.class, () -> {
-            enterpriseService.addEnterprise(enterpriseDTO);
-        });
-        assertEquals(thrown.getMessage(), "An Enterprise with the id 1 already exists");
-
-    }
 
 
     @Test
     public void WhenSavingEnterpriseShouldCallPersistMethod() throws EnterpriseAlreadyExistsException {
         EnterpriseDTO enterpriseDTO = new EnterpriseDTO();
         enterpriseDTO.setId(1);
-        when(enterpriseRepo.getOne(1)).thenReturn(Enterprise.builder().id(1).build());
+        when(enterpriseRepo.saveAndFlush(any(Enterprise.class))).thenReturn(Enterprise.builder().id(1).build());
 
         enterpriseService.addEnterprise(enterpriseDTO);
-        verify(enterpriseRepo, times(1)).save(any(Enterprise.class));
+        verify(enterpriseRepo, times(1)).saveAndFlush(any(Enterprise.class));
 
     }
 
@@ -113,16 +100,16 @@ public class EnterpriseServiceTest {
         enterpriseDTO.setId(1);
         enterpriseDTO.setName("trackit");
 
-        when(enterpriseRepo.getOne(1)).thenReturn(enterpriseService.maptoEnterprise(enterpriseDTO));
+        when(enterpriseRepo.saveAndFlush(any(Enterprise.class))).thenReturn(enterpriseService.maptoEnterprise(enterpriseDTO));
         when(enterpriseRepo.existsById(1)).thenReturn(true);
         enterpriseService.updateEnterprise(enterpriseDTO);
 
         enterpriseDTO.setName("trackme");
-        when(enterpriseRepo.getOne(1)).thenReturn(enterpriseService.maptoEnterprise(enterpriseDTO));
+        when(enterpriseRepo.saveAndFlush(any(Enterprise.class))).thenReturn(enterpriseService.maptoEnterprise(enterpriseDTO));
 
         EnterpriseDTO enterpriseDTOResult = enterpriseService.updateEnterprise(enterpriseDTO);
 
-        verify(enterpriseRepo, times(2)).save(any(Enterprise.class));
+        verify(enterpriseRepo, times(2)).saveAndFlush(any(Enterprise.class));
         assertEquals(enterpriseDTOResult.getName(), "trackme");
     }
 

@@ -36,6 +36,17 @@ public class CarController {
 		return new ResponseEntity<>(carMessage, HttpStatus.OK);
 	}
 
+	@GetMapping("/{id}")
+	private ResponseEntity<CarMessage> getCarById(@PathVariable String id) throws EnterpriseNotFoundException, CarsNotFoundException {
+		CarDTO car = carService.getCar(id);
+		CarMessage carMessage = CarMessage.builder()
+				.date(LocalDateTime.now().format(Utils.LocalDateTimeFormatter))
+				.path("/cars/"+id)
+				.cars(Collections.singletonList(car))
+				.build();
+		return new ResponseEntity<>(carMessage, HttpStatus.OK);
+	}
+
 	@PostMapping
 	private ResponseEntity<CarMessage> addCar(@Valid @RequestBody CarDTO carDTO) throws EnterpriseNotFoundException, CarAlreadyExistsException, DriverNotFoundException {
 		CarDTO car = carService.addCar(carDTO);

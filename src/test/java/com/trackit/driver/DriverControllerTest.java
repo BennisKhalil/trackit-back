@@ -52,6 +52,20 @@ public class DriverControllerTest {
     }
 
     @Test
+    public void WhenFetchingDriverWithIdShouldReturnDriverInAMessage() throws Exception {
+        DriverDTO driverDTO = DriverDTO.builder().id(1).firstName("Jhon").lastName("Smith").employedDate("12/08/2010").birthDay("15/09/2005").enterprise(1).build();
+        when(driverService.getDriver(1)).thenReturn(driverDTO);
+        mvc.perform(MockMvcRequestBuilders
+                .get("/drivers/1"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.drivers").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[*].id").exists());
+        verify(driverService, times(1)).getDriver(1);
+        verifyNoMoreInteractions(driverService);
+    }
+
+    @Test
     public void WhenAddingdriverShouldReturnTheAddedEntity() throws Exception {
         DriverDTO driver = DriverDTO.builder().id(1).firstName("Jhon").lastName("Smith").employedDate("12/08/2010").birthDay("15/09/2005").enterprise(1).build();
         when(driverService.addDriver(any(DriverDTO.class))).thenReturn(driver);

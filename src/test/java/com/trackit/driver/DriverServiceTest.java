@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -96,20 +97,27 @@ public class DriverServiceTest {
         verifyNoMoreInteractions(enterpriseRepo);
     }
 
+    @Test
+    public void WhenFetchDriverWithInvalidIdShouldThrowDriverNotFoundException(){
+        when(driverRepo.existsById(1)).thenReturn(false);
+        DriverNotFoundException thrown = Assertions.assertThrows(DriverNotFoundException.class,() ->{driverService.getDriver(1);});
+        assertEquals(thrown.getMessage(), "No Driver Found with the Id "+1);
+    }
 
     @Test
-    public void WhenSaveDriverWithExistingIdShouldReturnCarAlreadyExistsException() {
+
+    public void WhenFetchDriverWithValidIdShouldReturnDriver() throws DriverNotFoundException {
         when(driverRepo.existsById(1)).thenReturn(true);
-        DriverDTO driverDTO = DriverDTO.builder().id(1).enterprise(1).build();
-        DriverAlreadyExistsException thrown = Assertions.assertThrows(DriverAlreadyExistsException.class, () -> {
-            driverService.addDriver(driverDTO);
-        });
-        assertEquals(thrown.getMessage(), "Driver with the Id " + driverDTO.getId() + " Already Exists");
+        Enterprise enterprise = Enterprise.builder().id(1).build();
+        when(driverRepo.getOne(1)).thenReturn(Driver.builder().id(1).employedDate(LocalDate.now()).birthDay(LocalDate.now()).enterprise(enterprise).build());
+        DriverDTO driverDTO = driverService.getDriver(1);
+        verify(driverRepo,times(1)).getOne(1);
+        assertEquals(driverDTO.getId(),Integer.valueOf(1));
+
     }
 
     @Test
     public void WhenSaveDriverWithInvalidCarIdShouldReturnCarAlreadyExistsException() {
-        when(driverRepo.existsById(1)).thenReturn(false);
         when(carRepo.existsById("1")).thenReturn(false);
         DriverDTO driverDTO = DriverDTO.builder().id(1).enterprise(1).car("1").build();
         CarsNotFoundException thrown = Assertions.assertThrows(CarsNotFoundException.class, () -> {
@@ -120,7 +128,6 @@ public class DriverServiceTest {
 
     @Test
     public void WhenSaveDriverWithInvalidEnterpriseIdShouldReturnCarAlreadyExistsException() {
-        when(driverRepo.existsById(1)).thenReturn(false);
         when(carRepo.existsById("1")).thenReturn(true);
         when(enterpriseRepo.existsById(1)).thenReturn(false);
         DriverDTO driverDTO = DriverDTO.builder().id(1).enterprise(1).car("1").build();
@@ -133,7 +140,6 @@ public class DriverServiceTest {
 
     @Test
     public void WhenSaveDriverShouldCallPersistMethod() throws CarsNotFoundException, EnterpriseNotFoundException, DriverAlreadyExistsException {
-        when(driverRepo.existsById(1)).thenReturn(false);
         when(carRepo.existsById("1")).thenReturn(true);
         when(enterpriseRepo.existsById(1)).thenReturn(true);
         when(carRepo.getOne("1")).thenReturn(Car.builder().id("1").build());
@@ -147,10 +153,10 @@ public class DriverServiceTest {
                 .build();
         Driver driver = driverService.mapToDriver(driverDTO);
         driver.setEnterprise(Enterprise.builder().id(1).build());
-        when(driverRepo.getOne(1)).thenReturn(driver);
+        when(driverRepo.saveAndFlush(any(Driver.class))).thenReturn(driver);
         DriverDTO driverDTOResult = driverService.addDriver(driverDTO);
 
-        verify(driverRepo, times(1)).save(any(Driver.class));
+        verify(driverRepo, times(1)).saveAndFlush(any(Driver.class));
         assertEquals(driverDTOResult.getFirstName(), "Smith");
 
     }
@@ -206,9 +212,9 @@ public class DriverServiceTest {
                 .build();
         Driver driver = driverService.mapToDriver(driverDTO);
         driver.setEnterprise(Enterprise.builder().id(1).build());
-        when(driverRepo.getOne(1)).thenReturn(driver);
+        when(driverRepo.saveAndFlush(any(Driver.class))).thenReturn(driver);
         DriverDTO driverDTOResult = driverService.updateDriver(driverDTO);
-        verify(driverRepo, times(1)).save(any(Driver.class));
+        verify(driverRepo, times(1)).saveAndFlush(any(Driver.class));
     }
 
     @Test

@@ -19,6 +19,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -63,20 +64,20 @@ public class DriverServiceTest {
 
         List<Driver> mockedDrivers = new ArrayList<>();
 
-        Driver driver1 = Driver.builder().Id(1)
+        Driver driver1 = Driver.builder().id(1)
                 .firstName("driver1")
                 .enterprise(enterprise)
                 .birthDay(LocalDate.now())
                 .employedDate(LocalDate.now())
-                .car(Car.builder().Id("1").build())
+                .car(Car.builder().id("1").build())
                 .build();
 
-        Driver driver2 = Driver.builder().Id(2)
+        Driver driver2 = Driver.builder().id(2)
                 .firstName("driver2")
                 .enterprise(enterprise)
                 .birthDay(LocalDate.now())
                 .employedDate(LocalDate.now())
-                .car(Car.builder().Id("2").build())
+                .car(Car.builder().id("2").build())
                 .build();
 
         mockedDrivers.add(driver1);
@@ -99,7 +100,7 @@ public class DriverServiceTest {
     @Test
     public void WhenSaveDriverWithExistingIdShouldReturnCarAlreadyExistsException() {
         when(driverRepo.existsById(1)).thenReturn(true);
-        DriverDTO driverDTO = DriverDTO.builder().Id(1).enterprise(1).build();
+        DriverDTO driverDTO = DriverDTO.builder().id(1).enterprise(1).build();
         DriverAlreadyExistsException thrown = Assertions.assertThrows(DriverAlreadyExistsException.class, () -> {
             driverService.addDriver(driverDTO);
         });
@@ -110,7 +111,7 @@ public class DriverServiceTest {
     public void WhenSaveDriverWithInvalidCarIdShouldReturnCarAlreadyExistsException() {
         when(driverRepo.existsById(1)).thenReturn(false);
         when(carRepo.existsById("1")).thenReturn(false);
-        DriverDTO driverDTO = DriverDTO.builder().Id(1).enterprise(1).car("1").build();
+        DriverDTO driverDTO = DriverDTO.builder().id(1).enterprise(1).car("1").build();
         CarsNotFoundException thrown = Assertions.assertThrows(CarsNotFoundException.class, () -> {
             driverService.addDriver(driverDTO);
         });
@@ -122,7 +123,7 @@ public class DriverServiceTest {
         when(driverRepo.existsById(1)).thenReturn(false);
         when(carRepo.existsById("1")).thenReturn(true);
         when(enterpriseRepo.existsById(1)).thenReturn(false);
-        DriverDTO driverDTO = DriverDTO.builder().Id(1).enterprise(1).car("1").build();
+        DriverDTO driverDTO = DriverDTO.builder().id(1).enterprise(1).car("1").build();
         EnterpriseNotFoundException thrown = Assertions.assertThrows(EnterpriseNotFoundException.class, () -> {
             driverService.addDriver(driverDTO);
         });
@@ -135,14 +136,18 @@ public class DriverServiceTest {
         when(driverRepo.existsById(1)).thenReturn(false);
         when(carRepo.existsById("1")).thenReturn(true);
         when(enterpriseRepo.existsById(1)).thenReturn(true);
+        when(carRepo.getOne("1")).thenReturn(Car.builder().id("1").build());
+
         DriverDTO driverDTO = DriverDTO.builder()
-                .Id(1).enterprise(1)
+                .id(1).enterprise(1)
                 .car("1")
                 .firstName("Smith")
                 .birthDay("12/08/2002")
                 .employedDate("25/12/2009")
                 .build();
-
+        Driver driver = driverService.mapToDriver(driverDTO);
+        driver.setEnterprise(Enterprise.builder().id(1).build());
+        when(driverRepo.getOne(1)).thenReturn(driver);
         DriverDTO driverDTOResult = driverService.addDriver(driverDTO);
 
         verify(driverRepo, times(1)).save(any(Driver.class));
@@ -154,7 +159,7 @@ public class DriverServiceTest {
     @Test
     public void WhenUpdateDriverWithInvalidIdShouldReturnCarAlreadyExistsException() {
         when(driverRepo.existsById(1)).thenReturn(false);
-        DriverDTO driverDTO = DriverDTO.builder().Id(1).enterprise(1).build();
+        DriverDTO driverDTO = DriverDTO.builder().id(1).enterprise(1).build();
         DriverNotFoundException thrown = Assertions.assertThrows(DriverNotFoundException.class, () -> {
             driverService.updateDriver(driverDTO);
         });
@@ -165,7 +170,7 @@ public class DriverServiceTest {
     public void WhenUpdateCarWithInvalidCarIdShouldReturnCarAlreadyExistsException() {
         when(driverRepo.existsById(1)).thenReturn(true);
         when(carRepo.existsById("1")).thenReturn(false);
-        DriverDTO driverDTO = DriverDTO.builder().Id(1).enterprise(1).car("1").build();
+        DriverDTO driverDTO = DriverDTO.builder().id(1).enterprise(1).car("1").build();
         CarsNotFoundException thrown = Assertions.assertThrows(CarsNotFoundException.class, () -> {
             driverService.updateDriver(driverDTO);
         });
@@ -177,7 +182,7 @@ public class DriverServiceTest {
         when(driverRepo.existsById(1)).thenReturn(true);
         when(carRepo.existsById("1")).thenReturn(true);
         when(enterpriseRepo.existsById(1)).thenReturn(false);
-        DriverDTO driverDTO = DriverDTO.builder().Id(1).enterprise(1).car("1").build();
+        DriverDTO driverDTO = DriverDTO.builder().id(1).enterprise(1).car("1").build();
         EnterpriseNotFoundException thrown = Assertions.assertThrows(EnterpriseNotFoundException.class, () -> {
             driverService.updateDriver(driverDTO);
         });
@@ -186,30 +191,24 @@ public class DriverServiceTest {
 
 
     @Test
-    public void WhenUpdateCarShouldCallPersistMethod() throws CarsNotFoundException, EnterpriseNotFoundException, DriverNotFoundException {
+    public void WhenUpdateCarShouldCallPersistMethod() throws CarsNotFoundException, EnterpriseNotFoundException, DriverNotFoundException, DriverAlreadyExistsException {
         when(driverRepo.existsById(1)).thenReturn(true);
         when(carRepo.existsById("1")).thenReturn(true);
         when(enterpriseRepo.existsById(1)).thenReturn(true);
+        when(carRepo.getOne("1")).thenReturn(Car.builder().id("1").build());
 
         DriverDTO driverDTO = DriverDTO.builder()
-                .Id(1)
-                .enterprise(1)
-                .firstName("Smith")
+                .id(1).enterprise(1)
                 .car("1")
-                .lastName("Doe")
+                .firstName("Smith")
                 .birthDay("12/08/2002")
-                .employedDate("06/12/2002")
+                .employedDate("25/12/2009")
                 .build();
-
-        driverService.updateDriver(driverDTO);
-
-        driverDTO.setFirstName("Doe");
-
+        Driver driver = driverService.mapToDriver(driverDTO);
+        driver.setEnterprise(Enterprise.builder().id(1).build());
+        when(driverRepo.getOne(1)).thenReturn(driver);
         DriverDTO driverDTOResult = driverService.updateDriver(driverDTO);
-
-        verify(driverRepo, times(2)).save(any(Driver.class));
-        assertEquals(driverDTOResult.getFirstName(), "Doe");
-
+        verify(driverRepo, times(1)).save(any(Driver.class));
     }
 
     @Test

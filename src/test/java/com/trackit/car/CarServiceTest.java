@@ -1,5 +1,6 @@
 package com.trackit.car;
 
+import com.trackit.driver.Driver;
 import com.trackit.driver.DriverRepo;
 import com.trackit.enterprise.Enterprise;
 import com.trackit.enterprise.EnterpriseRepo;
@@ -80,7 +81,7 @@ public class CarServiceTest {
     public void WhenSavingCarThatAlreadyExistsShouldThrowCarAlreadyExistsException() {
         when(carRepo.existsById("1")).thenReturn(true);
         CarAlreadyExistsException thrown = Assertions.assertThrows(CarAlreadyExistsException.class, () -> {
-            carService.addCar(CarDTO.builder().Id("1").build());
+            carService.addCar(CarDTO.builder().id("1").build());
         });
         assertEquals(thrown.getMessage(), "Car with the Id 1 Already Exists");
     }
@@ -90,7 +91,7 @@ public class CarServiceTest {
         when(carRepo.existsById("1")).thenReturn(false);
         when(driverRepo.existsById(1)).thenReturn(false);
         DriverNotFoundException thrown = Assertions.assertThrows(DriverNotFoundException.class, () -> {
-            carService.addCar(CarDTO.builder().Id("1").driver(1).build());
+            carService.addCar(CarDTO.builder().id("1").driver(1).build());
         });
         assertEquals(thrown.getMessage(), "No Driver Found with the Id 1");
     }
@@ -101,7 +102,7 @@ public class CarServiceTest {
         when(driverRepo.existsById(1)).thenReturn(true);
         when(enterpriseRepo.existsById(1)).thenReturn(false);
         EnterpriseNotFoundException thrown = Assertions.assertThrows(EnterpriseNotFoundException.class, () -> {
-            carService.addCar(CarDTO.builder().Id("1").driver(1).enterprise(1).build());
+            carService.addCar(CarDTO.builder().id("1").driver(1).enterprise(1).build());
         });
         assertEquals(thrown.getMessage(), "No Enterprise Found with the Id 1");
 
@@ -113,12 +114,15 @@ public class CarServiceTest {
         when(driverRepo.existsById(1)).thenReturn(true);
         when(enterpriseRepo.existsById(1)).thenReturn(true);
         CarDTO carDTO = CarDTO.builder()
-                .Id("1")
+                .id("1")
                 .driver(1)
                 .enterprise(1)
                 .build();
 
         Car carEntity = carService.mapToCar(carDTO);
+        carEntity.setEnterprise(Enterprise.builder().id(1).build());
+        when(carRepo.getOne("1")).thenReturn(carEntity);
+
 
         carService.addCar(carDTO);
         verify(carRepo, times(1)).save(any(Car.class));
@@ -130,7 +134,7 @@ public class CarServiceTest {
     public void WhenUpdatingCarThatAlreadyExistsShouldThrowCarAlreadyExistsException() {
         when(carRepo.existsById("1")).thenReturn(false);
         CarsNotFoundException thrown = Assertions.assertThrows(CarsNotFoundException.class, () -> {
-            carService.updateCar(CarDTO.builder().Id("1").build());
+            carService.updateCar(CarDTO.builder().id("1").build());
         });
         assertEquals(thrown.getMessage(), "No Car Found with the Id 1");
     }
@@ -140,7 +144,7 @@ public class CarServiceTest {
         when(carRepo.existsById("1")).thenReturn(true);
         when(driverRepo.existsById(1)).thenReturn(false);
         DriverNotFoundException thrown = Assertions.assertThrows(DriverNotFoundException.class, () -> {
-            carService.updateCar(CarDTO.builder().Id("1").driver(1).build());
+            carService.updateCar(CarDTO.builder().id("1").driver(1).build());
         });
         assertEquals(thrown.getMessage(), "No Driver Found with the Id 1");
     }
@@ -151,7 +155,7 @@ public class CarServiceTest {
         when(driverRepo.existsById(1)).thenReturn(true);
         when(enterpriseRepo.existsById(1)).thenReturn(false);
         EnterpriseNotFoundException thrown = Assertions.assertThrows(EnterpriseNotFoundException.class, () -> {
-            carService.updateCar(CarDTO.builder().Id("1").driver(1).enterprise(1).build());
+            carService.updateCar(CarDTO.builder().id("1").driver(1).enterprise(1).build());
         });
         assertEquals(thrown.getMessage(), "No Enterprise Found with the Id 1");
 
@@ -159,25 +163,24 @@ public class CarServiceTest {
 
 
     @Test
-    public void WhenUpdateCarShouldCallPersistMethod() throws DriverNotFoundException, CarsNotFoundException, EnterpriseNotFoundException {
+    public void WhenUpdateCarShouldCallPersistMethod() throws DriverNotFoundException, CarsNotFoundException, EnterpriseNotFoundException, CarAlreadyExistsException {
         when(carRepo.existsById("1")).thenReturn(true);
         when(driverRepo.existsById(1)).thenReturn(true);
         when(enterpriseRepo.existsById(1)).thenReturn(true);
-
         CarDTO carDTO = CarDTO.builder()
-                .Id("1")
+                .id("1")
                 .driver(1)
                 .enterprise(1)
                 .build();
 
-        carService.updateCar(carDTO);
+        Car carEntity = carService.mapToCar(carDTO);
+        carEntity.setEnterprise(Enterprise.builder().id(1).build());
+        when(carRepo.getOne("1")).thenReturn(carEntity);
+        when(driverRepo.getOne(1)).thenReturn(Driver.builder().id(1).build());
 
         carDTO.setBrand("volvo");
-
         CarDTO carDTOResult = carService.updateCar(carDTO);
-
-        verify(carRepo, times(2)).save(any(Car.class));
-        assertEquals(carDTOResult.getBrand(), "volvo");
+        verify(carRepo, times(1)).save(any(Car.class));
 
 
     }

@@ -9,11 +9,12 @@ import com.trackit.exception.DriverNotFoundException;
 import com.trackit.exception.EnterpriseNotFoundException;
 import com.trackit.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
-
+@Service
 public class DriverServiceImpl implements DriverService{
 
 
@@ -38,7 +39,7 @@ public class DriverServiceImpl implements DriverService{
 		if(driverRepo.existsById(driverDTO.getId()))
 			throw new DriverAlreadyExistsException("Driver with the Id "+driverDTO.getId()+" Already Exists");
 		addOrUpdate(driverDTO);
-		return driverDTO;
+		return maptoDriverDTO(driverRepo.getOne(driverDTO.getId()));
 	}
 
 	@Override
@@ -46,7 +47,7 @@ public class DriverServiceImpl implements DriverService{
 		if(!driverRepo.existsById(driverDTO.getId()))
 			throw new DriverNotFoundException("No Driver Found with the Id ",driverDTO.getId());
 		addOrUpdate(driverDTO);
-		return driverDTO;
+		return maptoDriverDTO(driverRepo.getOne(driverDTO.getId()));
 	}
 
 	@Override
@@ -79,7 +80,7 @@ public class DriverServiceImpl implements DriverService{
 		Car car = null;
 		if(driverDTO.getCar() != null)
 			car = carRepo.getOne(driverDTO.getCar());
-		return Driver.builder().Id(driverDTO.getId())
+		return Driver.builder().id(driverDTO.getId())
 								.firstName(driverDTO.getFirstName())
 								.lastName(driverDTO.getLastName())
 								.birthDay(LocalDate.parse(driverDTO.getBirthDay(),Utils.formatter))
@@ -96,6 +97,20 @@ public class DriverServiceImpl implements DriverService{
 		if(!enterpriseRepo.existsById(driverDTO.getEnterprise()))
 			throw new EnterpriseNotFoundException("No Enterprise Found with the Id ",driverDTO.getId());
 		driverRepo.save(mapToDriver(driverDTO));
+	}
+
+	public DriverDTO maptoDriverDTO(Driver driver){
+		String carId = null;
+		if(driver.getCar() != null)
+			carId = driver.getCar().getId();
+		return DriverDTO.builder().id(driver.getId())
+				.firstName(driver.getFirstName())
+				.lastName(driver.getLastName())
+				.birthDay(driver.getBirthDay().format(Utils.formatter))
+				.employedDate(driver.getBirthDay().format(Utils.formatter))
+				.car(carId)
+				.enterprise(driver.getEnterprise().getId())
+				.build();
 	}
 
 }

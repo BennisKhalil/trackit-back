@@ -22,7 +22,7 @@ import lombok.*;
 public class Car {
 
 	@Id
-	private String Id;
+	private String id;
 
 	private String brand;
 
@@ -32,7 +32,7 @@ public class Car {
 
 	private String fuelConsumption;
 
-	@OneToOne(cascade=CascadeType.PERSIST, fetch = FetchType.LAZY)
+	@OneToOne(cascade=CascadeType.PERSIST, fetch = FetchType.EAGER)
 	@JoinColumn(name="driver_id")
 	private Driver driver;
 	

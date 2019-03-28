@@ -39,7 +39,7 @@ public class CarServiceImpl implements CarService{
 		if(carRepo.existsById(carDTO.getId()))
 			throw new CarAlreadyExistsException("Car with the Id "+carDTO.getId()+" Already Exists");
 		saveOrUpdate(carDTO);
-		return carDTO;
+		return mapToCarDTO(carRepo.getOne(carDTO.getId()));
 	}
 
 	@Override
@@ -47,7 +47,8 @@ public class CarServiceImpl implements CarService{
 		if(!carRepo.existsById(carDTO.getId()))
 			throw new CarsNotFoundException("No Car Found with the Id ", carDTO.getId());
 		saveOrUpdate(carDTO);
-		return carDTO;
+		return mapToCarDTO(carRepo.getOne(carDTO.getId()));
+
 	}
 
 
@@ -64,7 +65,7 @@ public class CarServiceImpl implements CarService{
 		if(carDTO.getDriver() != null)
 			driver =driverRepo.getOne(carDTO.getDriver());
 		return Car.builder()
-				.Id(carDTO.getId())
+				.id(carDTO.getId())
 				.brand(carDTO.getBrand())
 				.fuelConsumption(carDTO.getFuelConsumption())
 				.model(carDTO.getModel())
@@ -82,7 +83,7 @@ public class CarServiceImpl implements CarService{
 			if(c.getDriver() != null)
 				driverId= c.getDriver().getId();
 			return CarDTO.builder()
-					.Id(c.getId())
+					.id(c.getId())
 					.brand(c.getBrand())
 					.model(c.getModel())
 					.trip(c.getNextTrip())
@@ -101,6 +102,21 @@ public class CarServiceImpl implements CarService{
 			throw new EnterpriseNotFoundException("No Enterprise Found with the Id ", carDTO.getEnterprise());
 		Car car = mapToCar(carDTO);
 		carRepo.save(car);
+	}
+
+	public CarDTO mapToCarDTO(Car car){
+		Integer driverId = null;
+		if(car.getDriver() != null)
+			driverId = car.getDriver().getId();
+		return CarDTO.builder()
+				.id(car.getId())
+				.brand(car.getBrand())
+				.fuelConsumption(car.getFuelConsumption())
+				.model(car.getModel())
+				.trip(car.getNextTrip())
+				.driver(driverId)
+				.enterprise(car.getEnterprise().getId())
+				.build();
 	}
 
 

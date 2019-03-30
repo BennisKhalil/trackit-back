@@ -23,6 +23,8 @@ public class EnterpriseController {
     @Autowired
     private EnterpriseService enterpriseService;
 
+    @CrossOrigin(origins = "http://localhost:3000")
+
     @GetMapping
     public ResponseEntity<EnterpriseMessage> listAllEnterprises() {
         List<EnterpriseDTO> enterprises = enterpriseService.findAllEnterprise();
@@ -34,7 +36,7 @@ public class EnterpriseController {
         return new ResponseEntity<>(enterpriseMessage, HttpStatus.OK);
     }
 
-
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/{id}")
     public ResponseEntity<EnterpriseMessage> fetchEnterpriseById(@PathVariable Integer id) throws EnterpriseNotFoundException {
         EnterpriseDTO enterprise = enterpriseService.findEnterpriseById(id);
@@ -45,6 +47,7 @@ public class EnterpriseController {
                 .build();
         return new ResponseEntity<>(enterpriseMessage, HttpStatus.OK);
     }
+    @CrossOrigin(origins = "http://localhost:3000")
 
     @PostMapping
     private ResponseEntity<EnterpriseMessage> addEnterprise(@Valid @RequestBody EnterpriseDTO enterprise) throws EnterpriseAlreadyExistsException {
@@ -56,6 +59,7 @@ public class EnterpriseController {
                 .build();
         return new ResponseEntity<>(enterpriseMessage, HttpStatus.CREATED);
     }
+    @CrossOrigin(origins = "http://localhost:3000")
 
     @PutMapping
     private ResponseEntity<EnterpriseMessage> updateEnterprise(@Valid @RequestBody EnterpriseDTO enterprise) throws EnterpriseAlreadyExistsException, EnterpriseNotFoundException {
@@ -68,9 +72,10 @@ public class EnterpriseController {
                 .build();
         return new ResponseEntity<>(enterpriseMessage, HttpStatus.OK);
     }
+    @CrossOrigin(origins = "http://localhost:3000")
 
     @DeleteMapping("/{id}")
-    private ResponseEntity<EnterpriseMessage> deleteEnterprise(@PathVariable Integer id) throws EnterpriseAlreadyExistsException, EnterpriseNotFoundException {
+    private ResponseEntity<EnterpriseMessage> deleteEnterprise(@PathVariable Integer id) throws EnterpriseNotFoundException {
         enterpriseService.deleteEnterprise(id);
         return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
     }

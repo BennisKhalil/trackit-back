@@ -69,7 +69,7 @@ public class CarController {
 		return new ResponseEntity<>(carMessage, HttpStatus.OK);
 	}
 	@DeleteMapping("/{id}")
-	private ResponseEntity<CarMessage> deleteCar(@PathVariable String id) {
+	private ResponseEntity<CarMessage> deleteCar(@PathVariable String id) throws CarsNotFoundException {
 		carService.deleteCarById(id);
 		return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 	}

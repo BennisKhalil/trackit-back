@@ -153,10 +153,10 @@ public class DriverServiceTest {
                 .build();
         Driver driver = driverService.mapToDriver(driverDTO);
         driver.setEnterprise(Enterprise.builder().id(1).build());
-        when(driverRepo.saveAndFlush(any(Driver.class))).thenReturn(driver);
+        when(driverRepo.save(any(Driver.class))).thenReturn(driver);
         DriverDTO driverDTOResult = driverService.addDriver(driverDTO);
 
-        verify(driverRepo, times(1)).saveAndFlush(any(Driver.class));
+        verify(driverRepo, times(1)).save(any(Driver.class));
         assertEquals(driverDTOResult.getFirstName(), "Smith");
 
     }
@@ -212,13 +212,22 @@ public class DriverServiceTest {
                 .build();
         Driver driver = driverService.mapToDriver(driverDTO);
         driver.setEnterprise(Enterprise.builder().id(1).build());
-        when(driverRepo.saveAndFlush(any(Driver.class))).thenReturn(driver);
+        when(driverRepo.save(any(Driver.class))).thenReturn(driver);
         DriverDTO driverDTOResult = driverService.updateDriver(driverDTO);
-        verify(driverRepo, times(1)).saveAndFlush(any(Driver.class));
+        verify(driverRepo, times(1)).save(any(Driver.class));
     }
 
     @Test
-    public void WhenDeleteCarShouldCallDeleteMethod() {
+    public void WhenDeletingDeviceWithInvalidIdShouldThrowDeviceNotFoundException(){
+        when(driverRepo.existsById(1)).thenReturn(false);
+        DriverNotFoundException thrown = Assertions.assertThrows(DriverNotFoundException.class,()->{driverService.deleteDriver(1);});
+        assertEquals(thrown.getMessage(), "No Driver Found with the Id "+1);
+    }
+
+    @Test
+    public void WhenDeleteCarShouldCallDeleteMethod() throws DriverNotFoundException {
+        when(driverRepo.existsById(1)).thenReturn(true);
+
         driverService.deleteDriver(1);
         verify(driverRepo, times(1)).deleteById(1);
     }

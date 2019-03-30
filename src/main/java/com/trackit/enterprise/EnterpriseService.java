@@ -11,5 +11,5 @@ public interface EnterpriseService {
 	EnterpriseDTO findEnterpriseById(Integer id) throws EnterpriseNotFoundException;
 	EnterpriseDTO addEnterprise(EnterpriseDTO enterpriseDTO) throws EnterpriseAlreadyExistsException;
 	EnterpriseDTO updateEnterprise(EnterpriseDTO enterpriseDTO) throws EnterpriseAlreadyExistsException, EnterpriseNotFoundException;
-	void deleteEnterprise(Integer id);
+	void deleteEnterprise(Integer id) throws EnterpriseNotFoundException;
 }

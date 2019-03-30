@@ -46,7 +46,11 @@ public class DriverControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.drivers").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[*].id").exists());
+                .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[0].id").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[0].id").value(1));
+
+
         verify(driverService, times(1)).findAllDriversByEnterpriseId(1);
         verifyNoMoreInteractions(driverService);
     }
@@ -60,7 +64,11 @@ public class DriverControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.drivers").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[*].id").exists());
+                .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[0].id").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[0].id").value(1))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[1]").doesNotExist());
+
         verify(driverService, times(1)).getDriver(1);
         verifyNoMoreInteractions(driverService);
     }
@@ -76,9 +84,9 @@ public class DriverControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.drivers").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[0].id").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[0].id").value("1"));
-
+                .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[0].id").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[0].id").value(1))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[1]").doesNotExist());
         verify(driverService, times(1)).addDriver(any(DriverDTO.class));
         verifyNoMoreInteractions(driverService);
 
@@ -95,8 +103,9 @@ public class DriverControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.drivers").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[0].id").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[0].id").value("1"));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[0].id").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[0].id").value(1))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[1]").doesNotExist());
 
         verify(driverService, times(1)).updateDriver(any(DriverDTO.class));
         verifyNoMoreInteractions(driverService);
@@ -109,6 +118,7 @@ public class DriverControllerTest {
                 .delete("/drivers/1")
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isNoContent());
+
         verify(driverService, times(1)).deleteDriver(1);
         verifyNoMoreInteractions(driverService);
     }

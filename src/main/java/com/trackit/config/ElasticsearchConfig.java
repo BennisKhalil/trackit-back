@@ -1,4 +1,4 @@
-package com.trackit.device;
+package com.trackit.config;
 
 
 import java.net.InetAddress;
@@ -16,7 +16,7 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
 
 @Configuration
 @PropertySource(value = "classpath:application.properties")
-@EnableElasticsearchRepositories(basePackages = "com.trackitspring")
+@EnableElasticsearchRepositories(basePackages = "com.trackit")
 public class ElasticsearchConfig {
 
     @Value("${elasticsearch.host}")

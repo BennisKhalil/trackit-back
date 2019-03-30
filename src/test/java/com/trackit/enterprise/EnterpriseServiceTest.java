@@ -4,6 +4,7 @@ import com.trackit.car.CarRepo;
 import com.trackit.driver.DriverRepo;
 import com.trackit.exception.EnterpriseAlreadyExistsException;
 import com.trackit.exception.EnterpriseNotFoundException;
+import com.trackit.utils.EnterpriseMappers;
 import com.trackit.utils.Utils;
 import net.bytebuddy.asm.Advice;
 import org.junit.Test;
@@ -82,9 +83,9 @@ public class EnterpriseServiceTest {
         EnterpriseDTO enterpriseDTO = new EnterpriseDTO();
         enterpriseDTO.setId(1);
         when(enterpriseRepo.save(any(Enterprise.class))).thenReturn(Enterprise.builder().id(1).build());
-
         enterpriseService.addEnterprise(enterpriseDTO);
         verify(enterpriseRepo, times(1)).save(any(Enterprise.class));
+        verifyNoMoreInteractions(enterpriseRepo);
 
     }
 
@@ -104,17 +105,18 @@ public class EnterpriseServiceTest {
     }
 
     @Test
-    public void WhenUpdateEnterpriseShouldCallPersistMethod() throws EnterpriseNotFoundException {
+    public void WhenUpdateEnterpriseShouldCallPersistMethod() throws EnterpriseNotFoundException, EnterpriseAlreadyExistsException {
         EnterpriseDTO enterpriseDTO = new EnterpriseDTO();
         enterpriseDTO.setId(1);
         enterpriseDTO.setName("trackit");
 
-        when(enterpriseRepo.save(any(Enterprise.class))).thenReturn(enterpriseService.maptoEnterprise(enterpriseDTO));
+        when(enterpriseRepo.save(any(Enterprise.class))).thenReturn(EnterpriseMappers.maptoEnterprise(enterpriseDTO, carRepo, driverRepo));
         when(enterpriseRepo.existsById(1)).thenReturn(true);
-        enterpriseService.updateEnterprise(enterpriseDTO);
+
+        enterpriseService.addEnterprise(enterpriseDTO);
 
         enterpriseDTO.setName("trackme");
-        when(enterpriseRepo.save(any(Enterprise.class))).thenReturn(enterpriseService.maptoEnterprise(enterpriseDTO));
+        when(enterpriseRepo.save(any(Enterprise.class))).thenReturn(EnterpriseMappers.maptoEnterprise(enterpriseDTO, carRepo, driverRepo));
 
         EnterpriseDTO enterpriseDTOResult = enterpriseService.updateEnterprise(enterpriseDTO);
 

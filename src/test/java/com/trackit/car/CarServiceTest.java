@@ -19,6 +19,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.trackit.utils.CarMappers.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -140,7 +141,7 @@ public class CarServiceTest {
                 .enterprise(1)
                 .build();
 
-        Car carEntity = carService.mapToCar(carDTO);
+        Car carEntity = mapToCar(carDTO, enterpriseRepo, driverRepo);
         carEntity.setEnterprise(Enterprise.builder().id(1).build());
         when(carRepo.getOne("1")).thenReturn(carEntity);
 
@@ -188,16 +189,17 @@ public class CarServiceTest {
         when(carRepo.existsById("1")).thenReturn(true);
         when(driverRepo.existsById(1)).thenReturn(true);
         when(enterpriseRepo.existsById(1)).thenReturn(true);
+
         CarDTO carDTO = CarDTO.builder()
                 .id("1")
                 .driver(1)
                 .enterprise(1)
                 .build();
 
-        Car carEntity = carService.mapToCar(carDTO);
-        carEntity.setEnterprise(Enterprise.builder().id(1).build());
+        Car carEntity = mapToCar(carDTO, enterpriseRepo, driverRepo);
         when(carRepo.getOne("1")).thenReturn(carEntity);
-        when(driverRepo.getOne(1)).thenReturn(Driver.builder().id(1).build());
+
+        carEntity.setEnterprise(Enterprise.builder().id(1).build());
 
         carDTO.setBrand("volvo");
         CarDTO carDTOResult = carService.updateCar(carDTO);

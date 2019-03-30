@@ -13,6 +13,8 @@ import com.trackit.exception.DriverNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import static com.trackit.utils.CarMappers.*;
+
 @Service
 public class CarServiceImpl implements CarService{
 
@@ -72,66 +74,11 @@ public class CarServiceImpl implements CarService{
 			throw new DriverNotFoundException("No Driver Found with the Id ",carDTO.getDriver());
 		if(!enterpriseRepo.existsById(carDTO.getEnterprise()))
 			throw new EnterpriseNotFoundException("No Enterprise Found with the Id ", carDTO.getEnterprise());
-		Car car = mapToCar(carDTO);
+		Car car = mapToCar(carDTO, enterpriseRepo, driverRepo);
 		carRepo.save(car);
 	}
 
 
-
-
-	//Should Move Mappers to utils
-
-	public Car mapToCar(CarDTO carDTO) {
-		Driver driver = null;
-		if(carDTO.getDriver() != null)
-			driver =driverRepo.getOne(carDTO.getDriver());
-		return Car.builder()
-				.id(carDTO.getId())
-				.brand(carDTO.getBrand())
-				.fuelConsumption(carDTO.getFuelConsumption())
-				.model(carDTO.getModel())
-				.nextTrip(carDTO.getTrip())
-				.driver(driver)
-				.enterprise(enterpriseRepo.getOne(carDTO.getEnterprise()))
-				.build();
-	}
-
-
-
-	public List<CarDTO> mapListToCarDTOs(List<Car> cars){
-		return cars.parallelStream().map(c -> {
-			Integer driverId = null;
-			if(c.getDriver() != null)
-				driverId= c.getDriver().getId();
-			return CarDTO.builder()
-					.id(c.getId())
-					.brand(c.getBrand())
-					.model(c.getModel())
-					.trip(c.getNextTrip())
-					.fuelConsumption(c.getFuelConsumption())
-					.driver(driverId)
-					.enterprise(c.getEnterprise().getId())
-					.build();
-		}).collect(Collectors.toList());
-	}
-
-
-
-
-	public CarDTO mapToCarDTO(Car car){
-		Integer driverId = null;
-		if(car.getDriver() != null)
-			driverId = car.getDriver().getId();
-		return CarDTO.builder()
-				.id(car.getId())
-				.brand(car.getBrand())
-				.fuelConsumption(car.getFuelConsumption())
-				.model(car.getModel())
-				.trip(car.getNextTrip())
-				.driver(driverId)
-				.enterprise(car.getEnterprise().getId())
-				.build();
-	}
 
 
 	

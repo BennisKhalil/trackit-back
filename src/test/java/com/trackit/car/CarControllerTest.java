@@ -48,7 +48,16 @@ public class CarControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.cars").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[*].id").exists());
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].id").isString())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].id").value("1"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].brand").value("volvo"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].model").value("mod"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].enterprise").value(1));
+
+
+
+
         verify(carService, times(1)).findCarsByEnterpriseId(1);
         verifyNoMoreInteractions(carService);
     }
@@ -62,7 +71,11 @@ public class CarControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.cars").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[*].id").exists());
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].id").value("1"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].brand").value("volvo"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].model").value("mod"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].enterprise").value(1));
         verify(carService, times(1)).getCar("1");
         verifyNoMoreInteractions(carService);
     }
@@ -78,7 +91,11 @@ public class CarControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.cars").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].id").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].id").value("1"));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].id").isString())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].id").value("1"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].brand").value("volvo"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].model").value("mod"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].enterprise").value(1));
 
         verify(carService, times(1)).addCar(any(CarDTO.class));
         verifyNoMoreInteractions(carService);
@@ -97,7 +114,11 @@ public class CarControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.cars").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].id").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].id").value("1"));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].id").isString())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].id").value("1"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].brand").value("volvo"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].model").value("mod"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].enterprise").value(1));
 
         verify(carService, times(1)).updateCar(any(CarDTO.class));
         verifyNoMoreInteractions(carService);
@@ -106,11 +127,13 @@ public class CarControllerTest {
     @Test
     public void WhenDeletingCarShouldDeleteEntity() throws Exception {
         CarDTO car = CarDTO.builder().id("1").brand("volvo").model("mod").enterprise(1).build();
+
         mvc.perform(MockMvcRequestBuilders
                 .delete("/cars/1")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(objectMapper.writeValueAsString(car)))
                 .andExpect(status().isNoContent());
+
         verify(carService, times(1)).deleteCarById("1");
         verifyNoMoreInteractions(carService);
     }

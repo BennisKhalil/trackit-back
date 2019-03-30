@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.trackit.utils.DriverMappers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -151,7 +152,7 @@ public class DriverServiceTest {
                 .birthDay("12/08/2002")
                 .employedDate("25/12/2009")
                 .build();
-        Driver driver = driverService.mapToDriver(driverDTO);
+        Driver driver = mapToDriver(driverDTO,enterpriseRepo, carRepo);
         driver.setEnterprise(Enterprise.builder().id(1).build());
         when(driverRepo.save(any(Driver.class))).thenReturn(driver);
         DriverDTO driverDTOResult = driverService.addDriver(driverDTO);
@@ -210,7 +211,7 @@ public class DriverServiceTest {
                 .birthDay("12/08/2002")
                 .employedDate("25/12/2009")
                 .build();
-        Driver driver = driverService.mapToDriver(driverDTO);
+        Driver driver = mapToDriver(driverDTO, enterpriseRepo, carRepo );
         driver.setEnterprise(Enterprise.builder().id(1).build());
         when(driverRepo.save(any(Driver.class))).thenReturn(driver);
         DriverDTO driverDTOResult = driverService.updateDriver(driverDTO);

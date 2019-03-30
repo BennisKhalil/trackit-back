@@ -19,12 +19,13 @@ import java.util.Collections;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/drivers")
 public class DriverController {
 
     @Autowired
     private DriverService driverService;
-    @CrossOrigin(origins = "http://localhost:3000")
+
     @GetMapping("enterprise/{id}")
     private ResponseEntity<DriverMessage> getDriversByEnterprise(@PathVariable Integer id) throws EnterpriseNotFoundException {
         List<DriverDTO> drivers = driverService.findAllDriversByEnterpriseId(id);
@@ -36,7 +37,6 @@ public class DriverController {
         return new ResponseEntity<>(driverMessage, HttpStatus.OK);
     }
 
-    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/{id}")
     private ResponseEntity<DriverMessage> getDriverById(@PathVariable Integer id) throws DriverNotFoundException {
         DriverDTO driver = driverService.getDriver(id);
@@ -48,8 +48,6 @@ public class DriverController {
         return new ResponseEntity<>(driverMessage, HttpStatus.OK);
     }
 
-    @CrossOrigin(origins = "http://localhost:3000")
-
     @PostMapping
     private ResponseEntity<DriverMessage> addDriver(@Valid @RequestBody DriverDTO driverDTO) throws EnterpriseNotFoundException, DriverAlreadyExistsException, CarsNotFoundException {
         DriverDTO driver = driverService.addDriver(driverDTO);
@@ -60,7 +58,6 @@ public class DriverController {
                 .build();
         return new ResponseEntity<>(driverMessage, HttpStatus.CREATED);
     }
-    @CrossOrigin(origins = "http://localhost:3000")
 
     @PutMapping
     private ResponseEntity<DriverMessage> updateDriver(@Valid @RequestBody DriverDTO driverDTO) throws EnterpriseNotFoundException, DriverNotFoundException, CarsNotFoundException {
@@ -72,7 +69,7 @@ public class DriverController {
                 .build();
         return new ResponseEntity<>(driverMessage, HttpStatus.OK);
     }
-    @CrossOrigin(origins = "http://localhost:3000")
+
 
     @DeleteMapping("/{id}")
     private ResponseEntity<DriverMessage> deleteDriver(@PathVariable Integer id) throws DriverNotFoundException {

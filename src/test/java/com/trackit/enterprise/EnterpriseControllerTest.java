@@ -45,7 +45,10 @@ public class EnterpriseControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.enterprises").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.enterprises[*].id").exists());
+                .andExpect(MockMvcResultMatchers.jsonPath("$.enterprises[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.enterprises[0].id").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.enterprises[0].id").value(1));
+
         verify(enterpriseService, times(1)).findAllEnterprise();
         verifyNoMoreInteractions(enterpriseService);
     }
@@ -60,6 +63,8 @@ public class EnterpriseControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.enterprises").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.enterprises[0].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.enterprises[0].id").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.enterprises[0].id").value(1))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.enterprises[1]").doesNotExist());
 
         verify(enterpriseService, times(1)).findEnterpriseById(1);
@@ -70,7 +75,9 @@ public class EnterpriseControllerTest {
     public void WhenAddingEnterpriseShouldReturnTheAddedEntity() throws Exception {
 
         EnterpriseDTO enterprise = EnterpriseDTO.builder().id(1).name("enterprise").address("test").build();
+
         when(enterpriseService.addEnterprise(any(EnterpriseDTO.class))).thenReturn(enterprise);
+
         mvc.perform(MockMvcRequestBuilders
                 .post("/enterprises")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -78,7 +85,11 @@ public class EnterpriseControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.enterprises").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.enterprises[0].id").exists());
+                .andExpect(MockMvcResultMatchers.jsonPath("$.enterprises[0].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.enterprises[0].id").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.enterprises[0].id").value(1))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.enterprises[1]").doesNotExist());
+
         verify(enterpriseService, times(1)).addEnterprise(any(EnterpriseDTO.class));
         verifyNoMoreInteractions(enterpriseService);
 
@@ -87,7 +98,9 @@ public class EnterpriseControllerTest {
     @Test
     public void WhenUpdatingEnterpriseShouldReturnTheUpdatedEntity() throws Exception {
         EnterpriseDTO enterprise = EnterpriseDTO.builder().id(1).name("enterprise").address("test").build();
+
         when(enterpriseService.updateEnterprise(any(EnterpriseDTO.class))).thenReturn(enterprise);
+
         mvc.perform(MockMvcRequestBuilders
                 .put("/enterprises")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -95,7 +108,11 @@ public class EnterpriseControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.enterprises").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.enterprises[0].id").exists());
+                .andExpect(MockMvcResultMatchers.jsonPath("$.enterprises[0].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.enterprises[0].id").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.enterprises[0].id").value(1))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.enterprises[1]").doesNotExist());
+
         verify(enterpriseService, times(1)).updateEnterprise(any(EnterpriseDTO.class));
         verifyNoMoreInteractions(enterpriseService);
     }
@@ -103,11 +120,13 @@ public class EnterpriseControllerTest {
     @Test
     public void WhenDeletingEnterpriseShouldDeleteEntity() throws Exception {
         EnterpriseDTO enterprise = EnterpriseDTO.builder().id(1).name("enterprise").address("test").build();
+
         mvc.perform(MockMvcRequestBuilders
                 .delete("/enterprises/1")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(objectMapper.writeValueAsString(enterprise)))
                 .andExpect(status().isNoContent());
+
         verify(enterpriseService, times(1)).deleteEnterprise(1);
         verifyNoMoreInteractions(enterpriseService);
     }

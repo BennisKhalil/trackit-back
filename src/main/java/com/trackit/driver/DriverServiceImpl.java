@@ -14,6 +14,9 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.trackit.utils.DriverMappers.*;
+
 @Service
 public class DriverServiceImpl implements DriverService{
 
@@ -71,63 +74,10 @@ public class DriverServiceImpl implements DriverService{
 			throw new CarsNotFoundException("No Car Found with the Id ",driverDTO.getCar());
 		if(!enterpriseRepo.existsById(driverDTO.getEnterprise()))
 			throw new EnterpriseNotFoundException("No Enterprise Found with the Id ",driverDTO.getEnterprise());
-		Driver driver = mapToDriver(driverDTO);
+		Driver driver = mapToDriver(driverDTO,enterpriseRepo, carRepo);
 		return driverRepo.save(driver);
 	}
 
 
-	//Should Move Mappers To Utils
-
-	public List<DriverDTO> mapToDriverDTOList(List<Driver> drivers){
-
-
-		return drivers.stream()
-						.map(driver -> {
-							String carId = null;
-							if (driver.getCar() !=null)
-								carId = driver.getCar().getId();
-							return DriverDTO.builder()
-									.id(driver.getId())
-									.enterprise(driver.getEnterprise().getId())
-									.firstName(driver.getFirstName())
-									.lastName(driver.getLastName())
-									.birthDay(driver.getBirthDay().format(Utils.formatter))
-									.employedDate(driver.getEmployedDate().format(Utils.formatter))
-									.car(carId)
-									.build();
-						}).collect(Collectors.toList());
-
-	
-	}
-	public Driver mapToDriver(DriverDTO driverDTO){
-		Car car = null;
-		if(driverDTO.getCar() != null)
-			car = carRepo.getOne(driverDTO.getCar());
-		return Driver.builder().id(driverDTO.getId())
-								.firstName(driverDTO.getFirstName())
-								.lastName(driverDTO.getLastName())
-								.birthDay(LocalDate.parse(driverDTO.getBirthDay(),Utils.formatter))
-								.employedDate(LocalDate.parse(driverDTO.getEmployedDate(),Utils.formatter))
-								.car(car)
-								.enterprise(enterpriseRepo.getOne(driverDTO.getEnterprise()))
-								.build();
-
-	}
-
-
-
-	public DriverDTO maptoDriverDTO(Driver driver){
-		String carId = null;
-		if(driver.getCar() != null)
-			carId = driver.getCar().getId();
-		return DriverDTO.builder().id(driver.getId())
-				.firstName(driver.getFirstName())
-				.lastName(driver.getLastName())
-				.birthDay(driver.getBirthDay().format(Utils.formatter))
-				.employedDate(driver.getEmployedDate().format(Utils.formatter))
-				.car(carId)
-				.enterprise(driver.getEnterprise().getId())
-				.build();
-	}
 
 }

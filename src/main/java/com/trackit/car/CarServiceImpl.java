@@ -61,11 +61,25 @@ public class CarServiceImpl implements CarService{
 
 
 	@Override
-	public void deleteCarById(String id) {
+	public void deleteCarById(String id) throws CarsNotFoundException {
+		if(!carRepo.existsById(id))
+			throw new CarsNotFoundException("No Car Found with the Id ",id);
 		carRepo.deleteById(id);
 	}
 
+	public void saveOrUpdate(CarDTO carDTO) throws DriverNotFoundException, EnterpriseNotFoundException {
+		if(carDTO.getDriver() !=null && !driverRepo.existsById(carDTO.getDriver()))
+			throw new DriverNotFoundException("No Driver Found with the Id ",carDTO.getDriver());
+		if(!enterpriseRepo.existsById(carDTO.getEnterprise()))
+			throw new EnterpriseNotFoundException("No Enterprise Found with the Id ", carDTO.getEnterprise());
+		Car car = mapToCar(carDTO);
+		carRepo.save(car);
+	}
 
+
+
+
+	//Should Move Mappers to utils
 
 	public Car mapToCar(CarDTO carDTO) {
 		Driver driver = null;
@@ -102,14 +116,7 @@ public class CarServiceImpl implements CarService{
 	}
 
 
-	public void saveOrUpdate(CarDTO carDTO) throws DriverNotFoundException, EnterpriseNotFoundException {
-		if(carDTO.getDriver() !=null && !driverRepo.existsById(carDTO.getDriver()))
-			throw new DriverNotFoundException("No Driver Found with the Id ",carDTO.getDriver());
-		if(!enterpriseRepo.existsById(carDTO.getEnterprise()))
-			throw new EnterpriseNotFoundException("No Enterprise Found with the Id ", carDTO.getEnterprise());
-		Car car = mapToCar(carDTO);
-		carRepo.save(car);
-	}
+
 
 	public CarDTO mapToCarDTO(Car car){
 		Integer driverId = null;

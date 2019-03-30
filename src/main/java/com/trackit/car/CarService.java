@@ -17,6 +17,6 @@ public interface CarService {
 
     CarDTO updateCar(CarDTO car) throws CarsNotFoundException, DriverNotFoundException, EnterpriseNotFoundException;
 
-    void deleteCarById(String id);
+    void deleteCarById(String id) throws CarsNotFoundException;
 
 }

@@ -57,10 +57,26 @@ public class DriverServiceImpl implements DriverService{
 	}
 
 	@Override
-	public void deleteDriver(Integer id) {
+	public void deleteDriver(Integer id) throws DriverNotFoundException {
+		if(!driverRepo.existsById(id))
+			throw new DriverNotFoundException("No Driver Found with the Id ",id);
 		driverRepo.deleteById(id);
 		
 	}
+
+
+
+	public Driver addOrUpdate(DriverDTO driverDTO) throws CarsNotFoundException, EnterpriseNotFoundException {
+		if(driverDTO.getCar() != null && !carRepo.existsById(driverDTO.getCar()))
+			throw new CarsNotFoundException("No Car Found with the Id ",driverDTO.getCar());
+		if(!enterpriseRepo.existsById(driverDTO.getEnterprise()))
+			throw new EnterpriseNotFoundException("No Enterprise Found with the Id ",driverDTO.getEnterprise());
+		Driver driver = mapToDriver(driverDTO);
+		return driverRepo.save(driver);
+	}
+
+
+	//Should Move Mappers To Utils
 
 	public List<DriverDTO> mapToDriverDTOList(List<Driver> drivers){
 
@@ -98,14 +114,7 @@ public class DriverServiceImpl implements DriverService{
 
 	}
 
-	public Driver addOrUpdate(DriverDTO driverDTO) throws CarsNotFoundException, EnterpriseNotFoundException {
-		if(driverDTO.getCar() != null && !carRepo.existsById(driverDTO.getCar()))
-			throw new CarsNotFoundException("No Car Found with the Id ",driverDTO.getCar());
-		if(!enterpriseRepo.existsById(driverDTO.getEnterprise()))
-			throw new EnterpriseNotFoundException("No Enterprise Found with the Id ",driverDTO.getEnterprise());
-		Driver driver = mapToDriver(driverDTO);
-		return driverRepo.saveAndFlush(driver);
-	}
+
 
 	public DriverDTO maptoDriverDTO(Driver driver){
 		String carId = null;

@@ -40,7 +40,7 @@ public class EnterpriseServiceImpl implements EnterpriseService{
 
 	@Override
 	public EnterpriseDTO addEnterprise(EnterpriseDTO enterpriseDTO) throws EnterpriseAlreadyExistsException {
-		Enterprise enterprise = enterpriseRepo.saveAndFlush(maptoEnterprise(enterpriseDTO));
+		Enterprise enterprise = enterpriseRepo.save(maptoEnterprise(enterpriseDTO));
 		return mapToEnterpriseDTO(enterprise);
 	}
 
@@ -48,16 +48,25 @@ public class EnterpriseServiceImpl implements EnterpriseService{
 	public EnterpriseDTO updateEnterprise(EnterpriseDTO enterpriseDTO) throws EnterpriseNotFoundException {
 		if (!enterpriseRepo.existsById(enterpriseDTO.getId()))
 			throw new EnterpriseNotFoundException("No Enterprise Found with the Id ",enterpriseDTO.getId());
-		Enterprise enterprise = enterpriseRepo.saveAndFlush(maptoEnterprise(enterpriseDTO));
+		Enterprise enterprise = enterpriseRepo.save(maptoEnterprise(enterpriseDTO));
 		return  mapToEnterpriseDTO(enterprise);
 	}
 
 
 	@Override
-	public void deleteEnterprise(Integer id) {
+	public void deleteEnterprise(Integer id) throws EnterpriseNotFoundException {
+		if(!enterpriseRepo.existsById(id))
+			throw new EnterpriseNotFoundException("No Enterprise Found with the Id ",id);
 		enterpriseRepo.deleteById(id);
 		
 	}
+
+
+
+
+
+	//Should Move Mappers To Utils
+
 
 	public Enterprise maptoEnterprise(EnterpriseDTO enterpriseDTO){
 		List<String> carsIds = enterpriseDTO.getCarsIds();

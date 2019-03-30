@@ -13,5 +13,5 @@ public interface DriverService {
 	DriverDTO getDriver(Integer id) throws DriverNotFoundException;
 	DriverDTO addDriver(DriverDTO driverDTO) throws CarsNotFoundException, DriverAlreadyExistsException, EnterpriseNotFoundException;
 	DriverDTO updateDriver(DriverDTO driverDTO) throws CarsNotFoundException, EnterpriseNotFoundException, DriverNotFoundException;
-	void deleteDriver(Integer id);
+	void deleteDriver(Integer id) throws DriverNotFoundException;
 }

@@ -207,9 +207,20 @@ public class CarServiceTest {
     }
 
     @Test
-    public void WhenDeleteCarShouldCallDeleteMethod() {
+    public void WhenDeletingCarWithInvalidIdShouldThrowCarNotFoundException(){
+        when(carRepo.existsById("1")).thenReturn(false);
+        CarsNotFoundException thrown = Assertions.assertThrows(CarsNotFoundException.class,()->{carService.deleteCarById("1");});
+        assertEquals(thrown.getMessage(), "No Car Found with the Id "+1);
+    }
+
+
+    @Test
+    public void WhenDeleteCarShouldCallDeleteMethod() throws CarsNotFoundException {
+        when(carRepo.existsById("1")).thenReturn(true);
         carService.deleteCarById("1");
         verify(carRepo, times(1)).deleteById("1");
     }
+
+
 
 }

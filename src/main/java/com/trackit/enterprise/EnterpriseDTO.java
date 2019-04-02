@@ -26,11 +26,6 @@ public class EnterpriseDTO {
     @NotEmpty
     private String address;
 
-
-    private List<String> carsIds;
-
-    private List<Integer> driverIds;
-
     @Min(0)
     private Integer nbCars;
 }

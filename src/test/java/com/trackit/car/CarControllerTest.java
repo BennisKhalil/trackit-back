@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -41,10 +42,10 @@ public class CarControllerTest {
     @Test
     public void WhenFetchingForAllCarsWithEnterpriseIdShouldReturnAllCarsInAMessage() throws Exception {
         List<CarDTO> carDTOS = new ArrayList<>();
-        carDTOS.add(CarDTO.builder().id("1").brand("volvo").model("mod").enterprise(1).build());
+        carDTOS.add(CarDTO.builder().id("1").brand("volvo").model("mod").build());
         when(carService.findCarsByEnterpriseId(1)).thenReturn(carDTOS);
         mvc.perform(MockMvcRequestBuilders
-                .get("/cars/enterprise/1"))
+                .get("/enterprises/1/cars"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.cars").exists())
@@ -52,8 +53,7 @@ public class CarControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].id").isString())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].id").value("1"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].brand").value("volvo"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].model").value("mod"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].enterprise").value(1));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].model").value("mod"));
 
 
 
@@ -63,11 +63,11 @@ public class CarControllerTest {
     }
 
     @Test
-    public void WhenFetchingCarWithIdShouldReturnCarInAMessage() throws Exception {
-        CarDTO carDTO = CarDTO.builder().id("1").brand("volvo").model("mod").enterprise(1).build();
-        when(carService.getCar("1")).thenReturn(carDTO);
+    public void WhenFetchingCarWithIdAndEnterpriseIdShouldReturnCarInAMessage() throws Exception {
+        CarDTO carDTO = CarDTO.builder().id("1").brand("volvo").model("mod").build();
+        when(carService.getCarByCarIdAndEntrepriseId(1,"1")).thenReturn(carDTO);
         mvc.perform(MockMvcRequestBuilders
-                .get("/cars/1"))
+                .get("/enterprises/1/cars/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.cars").exists())
@@ -75,16 +75,17 @@ public class CarControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].id").value("1"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].brand").value("volvo"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].model").value("mod"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].enterprise").value(1));
-        verify(carService, times(1)).getCar("1");
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[1]").doesNotExist());
+
+        verify(carService, times(1)).getCarByCarIdAndEntrepriseId(1,"1");
         verifyNoMoreInteractions(carService);
     }
     @Test
     public void WhenAddingCarShouldReturnTheAddedEntity() throws Exception {
-        CarDTO car = CarDTO.builder().id("1").brand("volvo").model("mod").enterprise(1).build();
-        when(carService.addCar(any(CarDTO.class))).thenReturn(car);
+        CarDTO car = CarDTO.builder().id("1").brand("volvo").model("mod").build();
+        when(carService.addCar(car,1)).thenReturn(car);
         mvc.perform(MockMvcRequestBuilders
-                .post("/cars")
+                .post("/enterprises/1/cars")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(objectMapper.writeValueAsString(car)))
                 .andExpect(status().isCreated())
@@ -94,20 +95,19 @@ public class CarControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].id").isString())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].id").value("1"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].brand").value("volvo"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].model").value("mod"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].enterprise").value(1));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].model").value("mod"));
 
-        verify(carService, times(1)).addCar(any(CarDTO.class));
+        verify(carService, times(1)).addCar(car,1);
         verifyNoMoreInteractions(carService);
 
     }
 
     @Test
     public void WhenUpdatingCarShouldReturnTheUpdatedEntity() throws Exception {
-        CarDTO car = CarDTO.builder().id("1").brand("volvo").model("mod").enterprise(1).build();
-        when(carService.updateCar(any(CarDTO.class))).thenReturn(car);
+        CarDTO car = CarDTO.builder().id("1").brand("volvo").model("mod").build();
+        when(carService.updateCar(car,1)).thenReturn(car);
         mvc.perform(MockMvcRequestBuilders
-                .put("/cars")
+                .put("/enterprises/1/cars/1")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(objectMapper.writeValueAsString(car)))
                 .andExpect(status().isOk())
@@ -117,24 +117,22 @@ public class CarControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].id").isString())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].id").value("1"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].brand").value("volvo"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].model").value("mod"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].enterprise").value(1));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.cars[0].model").value("mod"));
 
-        verify(carService, times(1)).updateCar(any(CarDTO.class));
+        verify(carService, times(1)).updateCar(car,1);
         verifyNoMoreInteractions(carService);
     }
 
     @Test
     public void WhenDeletingCarShouldDeleteEntity() throws Exception {
-        CarDTO car = CarDTO.builder().id("1").brand("volvo").model("mod").enterprise(1).build();
-
+        CarDTO car = CarDTO.builder().id("1").brand("volvo").model("mod").build();
         mvc.perform(MockMvcRequestBuilders
-                .delete("/cars/1")
+                .delete("/enterprises/1/cars/1")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(objectMapper.writeValueAsString(car)))
                 .andExpect(status().isNoContent());
 
-        verify(carService, times(1)).deleteCarById("1");
+        verify(carService, times(1)).deleteCarById("1",1);
         verifyNoMoreInteractions(carService);
     }
 

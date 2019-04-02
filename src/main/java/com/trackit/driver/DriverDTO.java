@@ -33,6 +33,5 @@ public class DriverDTO {
 
     private String car;
 
-    @NotNull
-    private Integer enterprise;
+
 }

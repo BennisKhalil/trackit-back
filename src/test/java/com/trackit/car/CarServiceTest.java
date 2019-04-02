@@ -4,10 +4,8 @@ import com.trackit.driver.Driver;
 import com.trackit.driver.DriverRepo;
 import com.trackit.enterprise.Enterprise;
 import com.trackit.enterprise.EnterpriseRepo;
-import com.trackit.exception.CarAlreadyExistsException;
-import com.trackit.exception.CarsNotFoundException;
-import com.trackit.exception.DriverNotFoundException;
-import com.trackit.exception.EnterpriseNotFoundException;
+import com.trackit.exception.*;
+import javafx.beans.binding.When;
 import net.bytebuddy.asm.Advice;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -18,6 +16,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.trackit.utils.CarMappers.*;
 import static org.junit.Assert.assertEquals;
@@ -73,29 +72,37 @@ public class CarServiceTest {
         List<CarDTO> cars = carService.findCarsByEnterpriseId(1);
 
         assertEquals(2, cars.size());
-        assertEquals(new Integer(1), cars.get(0).getEnterprise());
         verify(carRepo, times(1)).findByEnterpriseId(1);
         verifyNoMoreInteractions(carRepo);
     }
 
     @Test
-    public void WhenFetchingCarWithInvalidIdShouldThrowCarNotFoundException(){
-        when(carRepo.existsById("1")).thenReturn(false);
-        CarsNotFoundException thrown =  Assertions.assertThrows(CarsNotFoundException.class,()->{carService.getCar("1");});
-        assertEquals(thrown.getMessage(), "No Car Found with the Id "+1);
+    public void WhenFetchingCarForEnterpriseWithInvalidEnterpriseIdShouldThrowEnterpriseNotFoundException(){
+        when(enterpriseRepo.existsById(1)).thenReturn(false);
+
+        EnterpriseNotFoundException thrown = Assertions.assertThrows(EnterpriseNotFoundException.class,()->{carService.getCarByCarIdAndEntrepriseId(1,"1");});
+        assertEquals(thrown.getMessage(),"No Enterprise Found with the Id 1");
     }
 
     @Test
-    public void WhenFetchingCarWithValidIdShouldReturnCar() throws CarsNotFoundException {
-        when(carRepo.existsById("1")).thenReturn(true);
+    public void WhenFetchingCarForEnterpriseWithInvalidIdShouldThrowCarNotFoundForEntrepriseException(){
+        when(enterpriseRepo.existsById(1)).thenReturn(true);
+        when(carRepo.findByIdAndEnterpriseId("1",1)).thenReturn(Optional.empty());
+        CarNotFoundForEntrepriseException thrown = Assertions.assertThrows(CarNotFoundForEntrepriseException.class,()->{carService.getCarByCarIdAndEntrepriseId(1,"1");});
+        assertEquals(thrown.getMessage(),"no car with the id "+1+" is found in this enterprise");
+    }
+
+    @Test
+    public void WhenFetchingCarForEnterpriseWithValidIdShouldReturnCar() throws CarNotFoundForEntrepriseException, EnterpriseNotFoundException {
+
+        when(enterpriseRepo.existsById(1)).thenReturn(true);
         Enterprise enterprise = Enterprise.builder().id(1).build();
-        when(carRepo.getOne("1")).thenReturn(Car.builder().id("1").enterprise(enterprise).build());
+        Car car = Car.builder().id("1").enterprise(enterprise).build();
+        when(carRepo.findByIdAndEnterpriseId("1",1)).thenReturn(Optional.of(car));
+        CarDTO carDTO = carService.getCarByCarIdAndEntrepriseId(1,"1");
 
-        CarDTO carDTO = carService.getCar("1");
-        verify(carRepo, times(1)).getOne("1");
-        assertEquals(carDTO.getId(), "1");
-
-
+        verify(carRepo,times(1)).findByIdAndEnterpriseId("1",1);
+        assertEquals(carDTO.getId(),"1");
     }
 
 
@@ -103,7 +110,7 @@ public class CarServiceTest {
     public void WhenSavingCarThatAlreadyExistsShouldThrowCarAlreadyExistsException() {
         when(carRepo.existsById("1")).thenReturn(true);
         CarAlreadyExistsException thrown = Assertions.assertThrows(CarAlreadyExistsException.class, () -> {
-            carService.addCar(CarDTO.builder().id("1").build());
+            carService.addCar(CarDTO.builder().id("1").build(),1);
         });
         assertEquals(thrown.getMessage(), "Car with the Id 1 Already Exists");
     }
@@ -113,7 +120,7 @@ public class CarServiceTest {
         when(carRepo.existsById("1")).thenReturn(false);
         when(driverRepo.existsById(1)).thenReturn(false);
         DriverNotFoundException thrown = Assertions.assertThrows(DriverNotFoundException.class, () -> {
-            carService.addCar(CarDTO.builder().id("1").driver(1).build());
+            carService.addCar(CarDTO.builder().id("1").driver(1).build(),1);
         });
         assertEquals(thrown.getMessage(), "No Driver Found with the Id 1");
     }
@@ -124,7 +131,7 @@ public class CarServiceTest {
         when(driverRepo.existsById(1)).thenReturn(true);
         when(enterpriseRepo.existsById(1)).thenReturn(false);
         EnterpriseNotFoundException thrown = Assertions.assertThrows(EnterpriseNotFoundException.class, () -> {
-            carService.addCar(CarDTO.builder().id("1").driver(1).enterprise(1).build());
+            carService.addCar(CarDTO.builder().id("1").driver(1).build(),1);
         });
         assertEquals(thrown.getMessage(), "No Enterprise Found with the Id 1");
 
@@ -138,15 +145,14 @@ public class CarServiceTest {
         CarDTO carDTO = CarDTO.builder()
                 .id("1")
                 .driver(1)
-                .enterprise(1)
                 .build();
 
-        Car carEntity = mapToCar(carDTO, enterpriseRepo, driverRepo);
+        Car carEntity = mapToCar(carDTO, enterpriseRepo, driverRepo, 1);
         carEntity.setEnterprise(Enterprise.builder().id(1).build());
         when(carRepo.getOne("1")).thenReturn(carEntity);
 
 
-        carService.addCar(carDTO);
+        carService.addCar(carDTO, 1);
         verify(carRepo, times(1)).save(any(Car.class));
         assertEquals(carDTO.getId(), carEntity.getId());
 
@@ -156,7 +162,7 @@ public class CarServiceTest {
     public void WhenUpdatingCarThatAlreadyExistsShouldThrowCarAlreadyExistsException() {
         when(carRepo.existsById("1")).thenReturn(false);
         CarsNotFoundException thrown = Assertions.assertThrows(CarsNotFoundException.class, () -> {
-            carService.updateCar(CarDTO.builder().id("1").build());
+            carService.updateCar(CarDTO.builder().id("1").build(), 1);
         });
         assertEquals(thrown.getMessage(), "No Car Found with the Id 1");
     }
@@ -166,7 +172,7 @@ public class CarServiceTest {
         when(carRepo.existsById("1")).thenReturn(true);
         when(driverRepo.existsById(1)).thenReturn(false);
         DriverNotFoundException thrown = Assertions.assertThrows(DriverNotFoundException.class, () -> {
-            carService.updateCar(CarDTO.builder().id("1").driver(1).build());
+            carService.updateCar(CarDTO.builder().id("1").driver(1).build(), 1);
         });
         assertEquals(thrown.getMessage(), "No Driver Found with the Id 1");
     }
@@ -177,7 +183,7 @@ public class CarServiceTest {
         when(driverRepo.existsById(1)).thenReturn(true);
         when(enterpriseRepo.existsById(1)).thenReturn(false);
         EnterpriseNotFoundException thrown = Assertions.assertThrows(EnterpriseNotFoundException.class, () -> {
-            carService.updateCar(CarDTO.builder().id("1").driver(1).enterprise(1).build());
+            carService.updateCar(CarDTO.builder().id("1").driver(1).build(), 1);
         });
         assertEquals(thrown.getMessage(), "No Enterprise Found with the Id 1");
 
@@ -193,33 +199,40 @@ public class CarServiceTest {
         CarDTO carDTO = CarDTO.builder()
                 .id("1")
                 .driver(1)
-                .enterprise(1)
                 .build();
 
-        Car carEntity = mapToCar(carDTO, enterpriseRepo, driverRepo);
+        Car carEntity = mapToCar(carDTO, enterpriseRepo, driverRepo,1);
         when(carRepo.getOne("1")).thenReturn(carEntity);
 
         carEntity.setEnterprise(Enterprise.builder().id(1).build());
 
         carDTO.setBrand("volvo");
-        CarDTO carDTOResult = carService.updateCar(carDTO);
+        CarDTO carDTOResult = carService.updateCar(carDTO, 1);
         verify(carRepo, times(1)).save(any(Car.class));
 
 
     }
 
     @Test
-    public void WhenDeletingCarWithInvalidIdShouldThrowCarNotFoundException(){
-        when(carRepo.existsById("1")).thenReturn(false);
-        CarsNotFoundException thrown = Assertions.assertThrows(CarsNotFoundException.class,()->{carService.deleteCarById("1");});
-        assertEquals(thrown.getMessage(), "No Car Found with the Id "+1);
+    public void WhenDeletingCarWithInvalidEnterpriseIdShouldThrowEnterpriseNotFoundException(){
+        when(enterpriseRepo.existsById(1)).thenReturn(false);
+        EnterpriseNotFoundException thrown = Assertions.assertThrows(EnterpriseNotFoundException.class,()->{carService.deleteCarById("1",1);});
+        assertEquals(thrown.getMessage(), "No Enterprise Found with the Id "+1);
     }
 
 
     @Test
-    public void WhenDeleteCarShouldCallDeleteMethod() throws CarsNotFoundException {
-        when(carRepo.existsById("1")).thenReturn(true);
-        carService.deleteCarById("1");
+    public void WhenDeletingCarThatDoesntBelongToEnterpriseShouldThrowCarNotFoundException(){
+        when(enterpriseRepo.existsById(1)).thenReturn(true);
+        when(carRepo.findByIdAndEnterpriseId("1",1)).thenReturn(Optional.empty());
+        CarNotFoundForEntrepriseException thrown = Assertions.assertThrows(CarNotFoundForEntrepriseException.class,()->{carService.deleteCarById("1",1);});
+        assertEquals(thrown.getMessage(), "No Car Found with the Id "+1);
+    }
+    @Test
+    public void WhenDeleteCarShouldCallDeleteMethod() throws CarsNotFoundException, CarNotFoundForEntrepriseException, EnterpriseNotFoundException {
+        when(enterpriseRepo.existsById(1)).thenReturn(true);
+        when(carRepo.findByIdAndEnterpriseId("1",1)).thenReturn(Optional.of(Car.builder().id("1").build()));
+        carService.deleteCarById("1",1);
         verify(carRepo, times(1)).deleteById("1");
     }
 

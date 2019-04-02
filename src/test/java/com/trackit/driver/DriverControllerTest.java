@@ -1,6 +1,7 @@
 package com.trackit.driver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.trackit.exception.DriverNotFoundForEnterpriseException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,10 +40,10 @@ public class DriverControllerTest {
     @Test
     public void WhenFetchingForAllDriversWithEnterpriseIdShouldReturnAllDriversInAMessage() throws Exception {
         List<DriverDTO> driverDTOS = new ArrayList<>();
-        driverDTOS.add(DriverDTO.builder().id(1).firstName("Jhon").lastName("Smith").employedDate("12/08/2010").birthDay("15/09/2005").enterprise(1).build());
+        driverDTOS.add(DriverDTO.builder().id(1).firstName("Jhon").lastName("Smith").employedDate("12/08/2010").birthDay("15/09/2005").build());
         when(driverService.findAllDriversByEnterpriseId(1)).thenReturn(driverDTOS);
         mvc.perform(MockMvcRequestBuilders
-                .get("/drivers/enterprise/1"))
+                .get("/enterprises/1/drivers"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.drivers").exists())
@@ -57,10 +58,10 @@ public class DriverControllerTest {
 
     @Test
     public void WhenFetchingDriverWithIdShouldReturnDriverInAMessage() throws Exception {
-        DriverDTO driverDTO = DriverDTO.builder().id(1).firstName("Jhon").lastName("Smith").employedDate("12/08/2010").birthDay("15/09/2005").enterprise(1).build();
-        when(driverService.getDriver(1)).thenReturn(driverDTO);
+        DriverDTO driverDTO = DriverDTO.builder().id(1).firstName("Jhon").lastName("Smith").employedDate("12/08/2010").birthDay("15/09/2005").build();
+        when(driverService.getDriverByDriverIdAndEntrepriseId(1,1)).thenReturn(driverDTO);
         mvc.perform(MockMvcRequestBuilders
-                .get("/drivers/1"))
+                .get("/enterprises/1/drivers/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.drivers").exists())
@@ -69,16 +70,16 @@ public class DriverControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[0].id").value(1))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[1]").doesNotExist());
 
-        verify(driverService, times(1)).getDriver(1);
+        verify(driverService, times(1)).getDriverByDriverIdAndEntrepriseId(1,1);
         verifyNoMoreInteractions(driverService);
     }
 
     @Test
     public void WhenAddingdriverShouldReturnTheAddedEntity() throws Exception {
-        DriverDTO driver = DriverDTO.builder().id(1).firstName("Jhon").lastName("Smith").employedDate("12/08/2010").birthDay("15/09/2005").enterprise(1).build();
-        when(driverService.addDriver(any(DriverDTO.class))).thenReturn(driver);
+        DriverDTO driver = DriverDTO.builder().id(1).firstName("Jhon").lastName("Smith").employedDate("12/08/2010").birthDay("15/09/2005").build();
+        when(driverService.addDriver(any(DriverDTO.class),anyInt())).thenReturn(driver);
         mvc.perform(MockMvcRequestBuilders
-                .post("/drivers")
+                .post("/enterprises/1/drivers")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(objectMapper.writeValueAsString(driver)))
                 .andExpect(status().isCreated())
@@ -87,17 +88,17 @@ public class DriverControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[0].id").isNumber())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[0].id").value(1))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[1]").doesNotExist());
-        verify(driverService, times(1)).addDriver(any(DriverDTO.class));
+        verify(driverService, times(1)).addDriver(any(DriverDTO.class),anyInt());
         verifyNoMoreInteractions(driverService);
 
     }
 
     @Test
     public void WhenUpdatingdriverShouldReturnTheUpdatedEntity() throws Exception {
-        DriverDTO driver = DriverDTO.builder().id(1).firstName("Jhon").lastName("Smith").employedDate("12/08/2010").birthDay("15/09/2005").enterprise(1).build();
-        when(driverService.updateDriver(any(DriverDTO.class))).thenReturn(driver);
+        DriverDTO driver = DriverDTO.builder().id(1).firstName("Jhon").lastName("Smith").employedDate("12/08/2010").birthDay("15/09/2005").build();
+        when(driverService.updateDriver(any(DriverDTO.class),anyInt())).thenReturn(driver);
         mvc.perform(MockMvcRequestBuilders
-                .put("/drivers")
+                .put("/enterprises/1/drivers/1")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(objectMapper.writeValueAsString(driver)))
                 .andExpect(status().isOk())
@@ -107,19 +108,19 @@ public class DriverControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[0].id").value(1))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.drivers[1]").doesNotExist());
 
-        verify(driverService, times(1)).updateDriver(any(DriverDTO.class));
+        verify(driverService, times(1)).updateDriver(any(DriverDTO.class),anyInt());
         verifyNoMoreInteractions(driverService);
     }
 
     @Test
-    public void WhenDeletingdriverShouldDeleteEntity() throws Exception {
-        DriverDTO driver = DriverDTO.builder().id(1).firstName("Jhon").lastName("Smith").employedDate("12/08/2010").birthDay("15/09/2005").enterprise(1).build();
+    public void WhenDeletingdriverShouldDeleteEntity() throws Exception, DriverNotFoundForEnterpriseException {
+        DriverDTO driver = DriverDTO.builder().id(1).firstName("Jhon").lastName("Smith").employedDate("12/08/2010").birthDay("15/09/2005").build();
         mvc.perform(MockMvcRequestBuilders
-                .delete("/drivers/1")
+                .delete("/enterprises/1/drivers/1")
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isNoContent());
 
-        verify(driverService, times(1)).deleteDriver(1);
+        verify(driverService, times(1)).deleteDriver(1,1);
         verifyNoMoreInteractions(driverService);
     }
 }

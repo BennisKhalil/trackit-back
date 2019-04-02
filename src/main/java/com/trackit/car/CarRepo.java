@@ -1,11 +1,14 @@
 package com.trackit.car;
 
 import java.util.List;
+import java.util.Optional;
 
-import org.springframework.data.elasticsearch.annotations.Query;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface CarRepo extends JpaRepository<Car, String>{
-	@Query("select * from car c where c.enterprise_id = :id")
-	public List<Car> findByEnterpriseId(Integer id);
+	 List<Car> findByEnterpriseId(Integer idEnterprise);
+
+	 Optional<Car> findByIdAndEnterpriseId(String idCar, Integer idEnterprise);
 }

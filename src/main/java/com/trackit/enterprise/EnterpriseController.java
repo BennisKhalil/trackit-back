@@ -57,13 +57,13 @@ public class EnterpriseController {
         return new ResponseEntity<>(enterpriseMessage, HttpStatus.CREATED);
     }
 
-    @PutMapping
-    private ResponseEntity<EnterpriseMessage> updateEnterprise(@Valid @RequestBody EnterpriseDTO enterprise) throws EnterpriseAlreadyExistsException, EnterpriseNotFoundException {
-
+    @PutMapping("/{enterprise_id}")
+    private ResponseEntity<EnterpriseMessage> updateEnterprise(@Valid @RequestBody EnterpriseDTO enterprise, @PathVariable("enterprise_id") Integer enterpriseId) throws EnterpriseAlreadyExistsException, EnterpriseNotFoundException {
+        enterprise.setId(enterpriseId);
         EnterpriseDTO enterpriseDTOReponse = enterpriseService.updateEnterprise(enterprise);
         EnterpriseMessage enterpriseMessage = EnterpriseMessage.builder()
                 .date(LocalDateTime.now().format(Utils.LocalDateTimeFormatter))
-                .path("/enterprises")
+                .path("/enterprises"+enterpriseId)
                 .enterprises(Collections.singletonList(enterpriseDTOReponse))
                 .build();
         return new ResponseEntity<>(enterpriseMessage, HttpStatus.OK);

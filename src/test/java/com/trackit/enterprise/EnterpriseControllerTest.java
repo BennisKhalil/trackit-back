@@ -102,7 +102,7 @@ public class EnterpriseControllerTest {
         when(enterpriseService.updateEnterprise(any(EnterpriseDTO.class))).thenReturn(enterprise);
 
         mvc.perform(MockMvcRequestBuilders
-                .put("/enterprises")
+                .put("/enterprises/1")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(objectMapper.writeValueAsString(enterprise)))
                 .andExpect(status().isOk())

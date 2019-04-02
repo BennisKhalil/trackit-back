@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 public class CarMappers {
 
 
-    public static Car mapToCar(CarDTO carDTO, EnterpriseRepo enterpriseRepo, DriverRepo driverRepo) {
+    public static Car mapToCar(CarDTO carDTO, EnterpriseRepo enterpriseRepo, DriverRepo driverRepo,Integer enterpriseId) {
         Driver driver = null;
         if(carDTO.getDriver() != null)
             driver =driverRepo.getOne(carDTO.getDriver());
@@ -23,7 +23,7 @@ public class CarMappers {
                 .model(carDTO.getModel())
                 .nextTrip(carDTO.getTrip())
                 .driver(driver)
-                .enterprise(enterpriseRepo.getOne(carDTO.getEnterprise()))
+                .enterprise(enterpriseRepo.getOne(enterpriseId))
                 .build();
     }
 
@@ -41,7 +41,6 @@ public class CarMappers {
                     .trip(c.getNextTrip())
                     .fuelConsumption(c.getFuelConsumption())
                     .driver(driverId)
-                    .enterprise(c.getEnterprise().getId())
                     .build();
         }).collect(Collectors.toList());
     }
@@ -60,7 +59,6 @@ public class CarMappers {
                 .model(car.getModel())
                 .trip(car.getNextTrip())
                 .driver(driverId)
-                .enterprise(car.getEnterprise().getId())
                 .build();
     }
 }

@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class ExceptionHandlerController {
 
 
-    @ExceptionHandler({CarsNotFoundException.class, CarAlreadyExistsException.class, DeviceNotFoundException.class, DriverAlreadyExistsException.class, DeviceNotFoundException.class, EnterpriseAlreadyExistsException.class, EnterpriseNotFoundException.class})
+    @ExceptionHandler({CarsNotFoundException.class, CarAlreadyExistsException.class, DeviceNotFoundException.class, DriverAlreadyExistsException.class, DeviceNotFoundException.class, EnterpriseAlreadyExistsException.class, EnterpriseNotFoundException.class, CarNotFoundForEntrepriseException.class, DriverNotFoundForEnterpriseException.class})
     public ResponseEntity<ExceptionMessage> exceptionHandler(HttpServletRequest request,
                                                                          Exception exception) {
         ExceptionMessage message = ExceptionMessage.builder().date(LocalDateTime.now().format(Utils.LocalDateTimeFormatter))

@@ -23,7 +23,6 @@ public class DriverMappers {
                         carId = driver.getCar().getId();
                     return DriverDTO.builder()
                             .id(driver.getId())
-                            .enterprise(driver.getEnterprise().getId())
                             .firstName(driver.getFirstName())
                             .lastName(driver.getLastName())
                             .birthDay(driver.getBirthDay().format(Utils.formatter))
@@ -34,7 +33,7 @@ public class DriverMappers {
 
 
     }
-    public static Driver mapToDriver(DriverDTO driverDTO, EnterpriseRepo enterpriseRepo, CarRepo carRepo){
+    public static Driver mapToDriver(DriverDTO driverDTO, EnterpriseRepo enterpriseRepo, CarRepo carRepo,Integer enterpriseId){
         Car car = null;
         if(driverDTO.getCar() != null)
             car = carRepo.getOne(driverDTO.getCar());
@@ -44,24 +43,23 @@ public class DriverMappers {
                 .birthDay(LocalDate.parse(driverDTO.getBirthDay(),Utils.formatter))
                 .employedDate(LocalDate.parse(driverDTO.getEmployedDate(),Utils.formatter))
                 .car(car)
-                .enterprise(enterpriseRepo.getOne(driverDTO.getEnterprise()))
+                .enterprise(enterpriseRepo.getOne(enterpriseId))
                 .build();
-
     }
 
 
 
-    public static DriverDTO maptoDriverDTO(Driver driver){
+    public static DriverDTO mapToDriverDTO(Driver driver){
         String carId = null;
         if(driver.getCar() != null)
             carId = driver.getCar().getId();
-        return DriverDTO.builder().id(driver.getId())
+        return DriverDTO.builder()
+                .id(driver.getId())
                 .firstName(driver.getFirstName())
                 .lastName(driver.getLastName())
                 .birthDay(driver.getBirthDay().format(Utils.formatter))
                 .employedDate(driver.getEmployedDate().format(Utils.formatter))
                 .car(carId)
-                .enterprise(driver.getEnterprise().getId())
                 .build();
     }
 }

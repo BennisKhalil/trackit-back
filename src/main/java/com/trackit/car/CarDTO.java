@@ -34,6 +34,4 @@ public class CarDTO {
 
 	private Integer driver;
 
-	@NotNull
-	private Integer enterprise;
 }
